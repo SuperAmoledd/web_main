@@ -1,0 +1,171 @@
+:root {
+            --bg-color: #050505;
+            --text-color: #e0e0e0;
+            --color-1: #ff003c; /* Cyber Red */
+            --color-2: #00f0ff; /* Cyber Cyan */
+            --color-3: #ccff00; /* Acid Lime */
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Space Grotesk', sans-serif;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, .brand-font {
+            font-family: 'Syncopate', sans-serif;
+            text-transform: uppercase;
+        }
+
+        /* --- PRELOADER MP4 STYLES --- */
+        #preload-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        #video-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            /* Ban đầu ẩn nhẹ để tạo hiệu ứng fade in khi load xong */
+            opacity: 0; 
+            transition: opacity 0.5s ease;
+        }
+        
+        /* Video full màn hình */
+        #intro-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #enter-btn {
+            position: relative;
+            z-index: 10;
+            font-family: 'Syncopate', sans-serif;
+            font-size: 1.2rem;
+            letter-spacing: 0.2em;
+            color: var(--color-2);
+            border: 1px solid var(--color-2);
+            padding: 15px 40px;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            opacity: 0; /* Ẩn đợi video ready */
+        }
+
+        #enter-btn:hover {
+            background: var(--color-2);
+            color: black;
+            box-shadow: 0 0 20px var(--color-2);
+        }
+
+        /* --- BROKEN COLOR TEXT EFFECT --- */
+        .glitch-text {
+            position: relative;
+            color: white;
+            mix-blend-mode: lighten;
+        }
+
+        .glitch-text::before,
+        .glitch-text::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.8;
+        }
+
+        .glitch-text::before {
+            left: -4px;
+            color: var(--color-1);
+            z-index: -1;
+            mix-blend-mode: screen;
+        }
+
+        .glitch-text::after {
+            left: 4px;
+            color: var(--color-2);
+            z-index: -2;
+            mix-blend-mode: screen;
+        }
+
+        /* --- IMAGES & CARDS --- */
+        .prism-card {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.5s ease;
+        }
+        
+        .prism-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(45deg, rgba(255,0,60,0.2), rgba(0,240,255,0.2));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 10;
+        }
+
+        .prism-card:hover::before {
+            opacity: 1;
+        }
+
+        .prism-card img {
+            transition: transform 1.2s cubic-bezier(0.19, 1, 0.22, 1);
+            filter: grayscale(100%) contrast(1.2);
+        }
+
+        .prism-card:hover img {
+            transform: scale(1.1);
+            filter: grayscale(0%) contrast(1);
+        }
+
+        /* --- MAGNETIC NAV --- */
+        .nav-btn {
+            position: relative;
+            padding: 10px 20px;
+        }
+        
+        .nav-btn::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0%;
+            height: 1px;
+            background-color: var(--color-2);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .nav-btn:hover::after {
+            width: 100%;
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); }
+        ::-webkit-scrollbar-thumb { background: var(--color-2); }
+        .line-clamp { overflow: hidden; display: block; }
+        
+        /* Ẩn nội dung chính ban đầu */
+        #smooth-wrapper, nav {
+            opacity: 0;
+            transition: opacity 1s ease;
+        }

@@ -1,530 +1,331 @@
 <!DOCTYPE html>
 <html lang="vi">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Blog đơn giản dễ nhìn</title>
-
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
-    />
-
-    <link
-      rel="icon"
-      href="images/icon-web.jpg"/>
-
-    <link rel="stylesheet" href="assets/css/index.css"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css"/> 
-
-    <style>
-      .anclick{visibility: hidden;position: absolute;width: 300px;border-radius: 10px;background: #fff;box-shadow: 0 12px 35px rgba(0,0,0,0.1);}.anclick .anclick3{padding: 10px 12px;}.anclick2 .anclick4{list-style: none;font-size: 22px;height: 50px;display: flex;width: 100%;cursor: pointer;align-items: center;border-radius: 5px;margin-bottom: 2px;padding: 0 5px 0 10px;}.anclick2 .anclick4:hover{background: #f2f2f2;}.anclick2 .anclick4 span{margin-left: 8px;font-size: 19px;}.anclick2 .setting{display: flex;margin-top: -5px;padding: 5px 12px;border-top: 1px solid #ccc;}.anclick2{position: relative;justify-content: space-between;}
-    </style>
-
-  </head>
-  <body>
-    <div class="anclick"><div class="anclick2"><ul class="anclick3"><li class="anclick4"><i class="uil uil-eye"></i><span>Preview</span></li><li class="anclick4"><i class="uil uil-link-alt"></i><span>Get Link</span></li><li class="anclick4"><i class="uil uil-edit"></i><span>Rename</span></li><li class="anclick4"><i class="uil uil-trash-alt"></i><span>Delete</span></li></ul><div class="setting"><li class="anclick4"><i class="uil uil-setting"></i><span>Settings</span></li></div></div></div>
-
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NGV | Chăm chỉ - Trải nghiệm - Tự Do</title>
+    
     <script>
-const contextMenu = document.querySelector(".anclick"),shareMenu = contextMenu.querySelector(".share-anclick3");window.addEventListener("contextmenu", e => {e.preventDefault();let x = e.offsetX, y = e.offsetY,winWidth = window.innerWidth,winHeight = window.innerHeight,cmWidth = contextMenu.offsetWidth,cmHeight = contextMenu.offsetHeight;if(x > (winWidth - cmWidth - shareMenu.offsetWidth)) {shareMenu.style.left = "-200px";} else {shareMenu.style.left = "";shareMenu.style.right = "-200px";}x = x > winWidth - cmWidth ? winWidth - cmWidth - 5 : x;y = y > winHeight - cmHeight ? winHeight - cmHeight - 5 : y;contextMenu.style.left = `${x}px`;contextMenu.style.top = `${y}px`;contextMenu.style.visibility = "visible";});document.addEventListener("click", () => contextMenu.style.visibility = "hidden");
+        window.addEventListener('error', event => {
+            if (event.message === 'ResizeObserver loop completed with undelivered notifications.') {
+                event.stopImmediatePropagation();
+            }
+        });
+        const originalError = console.error;
+        console.error = (...args) => {
+            if (/ResizeObserver loop completed with undelivered notifications/.test(args[0])) return;
+            originalError.call(console, ...args);
+        };
     </script>
 
-    <header class="header">
-      <div id="menu-btn" class="fas fa-bars"></div>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Space+Grotesk:wght@300;400;600&display=swap" rel="stylesheet">
 
-      <a data-aos="zoom-in-left" data-aos-delay="150" href="/" class="logo">
-        <i class="fas fa-paper-plane"></i>Ngv
-      </a>
+    <!-- GSAP Core & Plugins -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js"></script>
+    <script src="https://assets.codepen.io/16327/ScrollSmoother.min.js"></script>
 
-      <nav class="navbar">
-        <a data-aos="zoom-in-left" data-aos-delay="300" href="#home">home</a>
-        <a data-aos="zoom-in-left" data-aos-delay="450" href="#about">about</a>
-        <a data-aos="zoom-in-left" data-aos-delay="600" href="#aboutweb">About Web</a>
-        <a data-aos="zoom-in-left" data-aos-delay="750" href="#achievements">Achievements</a>
-        <a data-aos="zoom-in-left" data-aos-delay="1150" href="#blogs">blogs</a>
-      </nav>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="antialiased" id="main-body">
 
-      <a
-        data-aos="zoom-in-left"
-        data-aos-delay="1300"
-        class="btn"
-        id="icon"
-        >Click here to listen</a
-      >
-    </header>
-
-    <section class="home" id="home">
-      <div class="content">
-        <span data-aos="fade-up" data-aos-delay="150">Welcome</span>
-        <h3 data-aos="fade-up" data-aos-delay="300">To the Website</h3>
-        <p data-aos="fade-up" data-aos-delay="450">
-          Ấn vào "Nghe Nhạc" dưới đây để nghe nhạc
-        </p>
-        <a data-aos="fade-up" data-aos-delay="600" class="btn" id="icon2"
-          >Nghe Nhạc</a
-        >
-      </div>
-    </section>
-
-    <section class="about" id="about">
-      <div class="box" data-aos="fade-up" data-aos-delay="400">
-        <div class="image">
-          <img src="images/aboutus.png" alt="" width="300" height="300" />
+    <!-- PRELOADER (MP4 VIDEO) -->
+    <div id="preload-loader">
+        <div id="video-wrapper">
+            <!-- Video Rickroll MP4, muted ban đầu để browser cho phép autoplay background nếu cần, nhưng ta sẽ unmute khi click -->
+            <video id="intro-video" src="/video/rickroll.mp4" playsinline loop muted></video>
         </div>
-
-        <div class="content" data-aos="fade-left" data-aos-delay="400">
-          <span>About Us</span>
-          <p>
-            About us, anyway chúng tôi chỉ làm website này đơn giản chỉ vì fomo với mấy thằng discord làm website bla bla bla...
-          </p>
-        </div>
-        <div class="buttons">
-          <a
-            href="https://www.youtube.com/watch?v=dQw4w9WgXcQ&list=RDdQw4w9WgXcQ&start_radio=1"
-            class="button-discord"
-          >
-            <span class="button-i">
-              <i class="fab fa-discord"></i>`
-            </span>
-            <span class="button-t"> Discord </span>
-          </a>
-          <a
-            href="https://discord.com/oauth2/authorize?client_id=1297500785474670673&permissions=8&integration_type=0&scope=bot+applications.commands"
-            class="button-botdiscord"
-          >
-            <span class="button-i">
-              <i class="fas fa-angle-right"></i>
-            </span>
-            <span class="button-t"> Add Bot </span>
-            <span class="button-i">
-              <i class="fas fa-angle-left"></i>
-            </span>
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <section class="aboutweb" id="aboutweb">
-      <div class="heading">
-        <span>About Web</span>
-        <h1>Tất cả những gì thay đổi của web</h1>
-      </div>
-
-      <div class="box-container">
-        <div class="box" data-aos="fade-up" data-aos-delay="150">
-          <div class="image">
-            <img src="images/web1.png" alt="" />
-          </div>
-          <div class="content">
-            <h3>Web Đầu Tiên khi học code</h3>
-            <p>Đây là web đầu tiên mà tôi làm web, nó rất xấu và đơn sơ...</p>
-            <a href="#">Coming Soon <i class="fas fa-angle-right"></i></a>
-          </div>
-        </div>
-
-        <div class="box" data-aos="fade-up" data-aos-delay="300">
-          <div class="image">
-            <img src="images/web2.png" alt="" />
-          </div>
-          <div class="content">
-            <h3>Web sau khi học code được 2 tuần</h3>
-            <p>Tôi đã biết cách trang trí web cho đẹp hơn...</p>
-            <a href="#">Coming Soon <i class="fas fa-angle-right"></i></a>
-          </div>
-        </div>
-
-        <div class="box" data-aos="fade-up" data-aos-delay="600">
-          <div class="image">
-            <img
-              src="images/web3.png"
-              alt=""
-            />
-          </div>
-          <div class="content">
-            <h3>Web sau khi 2 tháng học code</h3>
-            <p>
-              Tôi trở thành coder...
-            </p>
-            <a href="#">Coming Soon <i class="fas fa-angle-right"></i></a>
-          </div>
-        </div>
-
-        <div class="box" data-aos="fade-up" data-aos-delay="750">
-          <div class="image">
-            <img
-              src="images/web-truong.png"
-              alt=""
-            />
-          </div>
-          <div class="content">
-            <h3>Web trường educa</h3>
-            <p>Website Educa - Website trường học...</p>
-            <a href="educa">Read More <i class="fas fa-angle-right"></i></a>
-          </div>
-        </div>
-
-        <div class="box" data-aos="fade-up" data-aos-delay="800">
-          <div class="image">
-            <img
-              src="images/snakegame.png"
-              alt=""
-            />
-          </div>
-          <div class="content">
-            <h3>Snake Game</h3>
-            <p>Snake game cực đẹp và cực cuốn..</p>
-            <a href="snakegame"
-              >Play Game <i class="fas fa-angle-right"></i
-            ></a>
-          </div>
-        </div>
-
-        <div class="box" data-aos="fade-up" data-aos-delay="900">
-          <div class="image">
-            <img
-              src="images/caro-game.png"
-              alt=""
-            />
-          </div>
-          <div class="content">
-            <h3>Game Caro</h3>
-            <p>Website game caro</p>
-            <a href="carogame">Play Game <i class="fas fa-angle-right"></i></a>
-          </div>
-        </div>
-
-        <div class="box" data-aos="fade-up" data-aos-delay="1100">
-          <div class="image">
-            <img
-              src="images/game-go-nhanh.png"
-              alt=""
-            />
-          </div>
-          <div class="content">
-            <h3>Game đánh chữ nhanh</h3>
-            <p>Rèn luyện trình độ cào phím...</p>
-            <a href="game-go-nhanh">Play now... <i class="fas fa-angle-right"></i></a>
-          </div>
-        </div>
-
-        <div class="box" data-aos="fade-up" data-aos-delay="1300">
-          <div class="image">
-            <img
-              src="images/tomau.png"
-              alt=""
-            />
-          </div>
-          <div class="content">
-            <h3>Website Vẽ</h3>
-            <p>Bạn có thể vẽ bất cứ gì</p>
-            <a href="tomau">Draw Now <i class="fas fa-angle-right"></i></a>
-          </div>
-        </div>
-
-        <div class="box" data-aos="fade-up" data-aos-delay="1500">
-          <div class="image">
-            <img
-              src="images/webtruyen.png"
-              alt=""
-            />
-          </div>
-          <div class="content">
-            <h3>Website Truyện</h3>
-            <p>Hiện không có thời gian code nên bỏ qua nhé</p>
-            <a href="#">Coming Soon <i class="fas fa-angle-right"></i></a>
-          </div>
-        </div>
-
-        <div class="box" data-aos="fade-up" data-aos-delay="1700">
-          <div class="image">
-            <img
-              src="https://clashofclans.inbox.supercell.com/lqe2co20rkhw/6FVWDXB0cVYOIZqhu6gpxb/7ee661f3789f870d45d55bdc92dd6114/tw_20200619_Qol_-Balance-Changes-thumb_2.png?fm=webp&w=1681"
-              alt=""
-            />
-          </div>
-          <div class="content">
-            <h3>Clash of Clans Website</h3>
-            <p>Website được tạo ra để chia sẻ các base,combo,...</p>
-            <a href="https://coc.byngv.space">Read more<i class="fas fa-angle-right"></i></a>
-          </div>
-        </div>
-
-        <div class="box" data-aos="fade-up" data-aos-delay="1900">
-          <div class="image">
-            <img
-              src="images/comingsoon.png"
-              alt=""
-            />
-          </div>
-          <div class="content">
-            <h3>Coming soon</h3>
-            <p>Coming soon...</p>
-            <a href="#">Coming Soon... <i class="fas fa-angle-right"></i></a>
-          </div>
-        </div>
-
-        <div class="box" data-aos="fade-up" data-aos-delay="2100">
-          <div class="image">
-            <img
-              src="images/comingsoon.png"
-              alt=""
-            />
-          </div>
-          <div class="content">
-            <h3>Coming soon</h3>
-            <p>Coming soon...</p>
-            <a href="#">Coming Soon... <i class="fas fa-angle-right"></i></a>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="achievements" id="achievements">
-      <div class="heading">
-        <span>achievements</span>
-        <h1>Thành Tựu, Các Kĩ Năng,...</h1>
-      </div>
-
-      <div class="box-container">
-        <div class="box" data-aos="zoom-in-up" data-aos-delay="150">
-          <i class="fas fa-globe"></i>
-          <h3>worldwide</h3>
-          <p>Website trên toàn thế giới.</p>
-        </div>
-
-        <div class="box" data-aos="zoom-in-up" data-aos-delay="300">
-          <i class="fas fa-hiking"></i>
-          <h3>try</h3>
-          <p>Chúng tôi có đội ngũ rất chăm chỉ và cố gắng.</p>
-        </div>
-
-        <div class="box" data-aos="zoom-in-up" data-aos-delay="450">
-          <i class="fas fa-code"></i>
-          <h3>Dev</h3>
-          <p>Ai biết gì về code đâu</p>
-        </div>
-
-        <div class="box" data-aos="zoom-in-up" data-aos-delay="600">
-          <i class="fas fa-keyboard"></i>
-          <h3>Tay nhanh hơn não</h3>
-          <p>Chúng tôi có thể cào phím tay nhanh hơn não.</p>
-        </div>
-
-        <div class="box" data-aos="zoom-in-up" data-aos-delay="750">
-          <i class="fas fa-lightbulb"></i>
-          <h3>idea</h3>
-          <p>Siêu ý tưởng, có thể làm bất cứ thứ gì mà team muốn.</p>
-        </div>
-
-        <div class="box" data-aos="zoom-in-up" data-aos-delay="900">
-          <i class="fas fa-graduation-cap"></i>
-          <h3>Achievement</h3>
-          <p>Đạo nhái, Copy source code game,...</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="review">
-      <div class="content" data-aos="fade-right" data-aos-delay="300">
-        <span>Our Team</span>
-        <h3>Development Team</h3>
-        <p>
-          Đội ngũ nghiệp dư....
-        </p>
-      </div>
-
-      <div class="box-container" data-aos="fade-left" data-aos-delay="600">
-        <div class="box">
-          <p>"I'm the best in this world"</p>
-          <div class="user">
-            <img src="images/anhadmin.jpg" alt="" />
-            <div class="info">
-              <h3>Ngữ</h3>
-              <span>-Founder <br />-Administrator</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="blogs" id="blogs">
-      <div class="heading">
-        <span>blogs & posts</span>
-        <h1>Coming Soon...</h1>
-      </div>
-
-      <div class="box-container">
-        <div class="box" data-aos="fade-up" data-aos-delay="150">
-          <div class="image">
-            <img
-              src="images/comingsoon.png"
-              alt=""
-            />
-          </div>
-          <div class="content">
-            <a href="#" class="link">Coming Soon...</a>
-            <p>Coming Soon...</p>
-            <div class="icon">
-              <a href="#"><i class="fas fa-clock"></i> 21st may, 20xx</a>
-              <a href="#"><i class="fas fa-user"></i> by admin</a>
-            </div>
-          </div>
-        </div>
-
-        <div class="box" data-aos="fade-up" data-aos-delay="300">
-          <div class="image">
-            <img
-              src="images/comingsoon.png"
-              alt=""
-            />
-          </div>
-          <div class="content">
-            <a href="#" class="link">Coming Soon...</a>
-            <p>Coming Soon...</p>
-            <div class="icon">
-              <a href="#"><i class="fas fa-clock"></i> 21st may, 20xx</a>
-              <a href="#"><i class="fas fa-user"></i> by admin</a>
-            </div>
-          </div>
-        </div>
-
-        <div class="box" data-aos="fade-up" data-aos-delay="450">
-          <div class="image">
-            <img
-              src="images/comingsoon.png"
-              alt=""
-            />
-          </div>
-          <div class="content">
-            <a href="#" class="link">Coming Soon...</a>
-            <p>Coming Soon...</p>
-            <div class="icon">
-              <a href="#"><i class="fas fa-clock"></i> 21st may, 20xx</a>
-              <a href="#"><i class="fas fa-user"></i> by admin</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <div class="banner">
-      <div class="content" data-aos="zoom-in-up" data-aos-delay="300">
-        <span>Cảm Ơn Bạn Đã Xem Tới Đây</span>
-        <h3>Welcom to Ngv</h3>
-        <p>
-          Cảm ơn bạn đã đọc những blog cá nhân Website. Chúc bạn một ngày tốt
-          lành
-        </p>
-        <a
-          href="images/rickroll.jpg"
-          class="btn"
-          >Click Here To Đập Máy</a
-        >
-      </div>
+        <button id="enter-btn">WELCOME!!!</button>
     </div>
 
-    <section class="footer">
-      <div class="box-container">
-        <div class="box" data-aos="fade-up" data-aos-delay="150">
-          <a href="#" class="logo"> <i class="fas fa-paper-plane"></i>Ngv </a>
-          <p>Các Bạn Có thể liên hệ với chúng tôi tại đây</p>
-          <div class="share">
-            <a
-              href="https://www.facebook.com/v.ung.hnaht"
-              class="fab fa-facebook-f"
-            ></a>
-            <a
-              href="https://discord.com/invite/6fAaq67wej"
-              class="fab fa-discord"
-            ></a>
-            <a
-              href="https://www.instagram.com/v.ung_hnaht/"
-              class="fab fa-instagram"
-            ></a>
-
-          </div>
+    <!-- NAVIGATION -->
+    <nav class="fixed top-0 left-0 w-full z-50 px-8 py-6 flex justify-between items-center mix-blend-difference text-white">
+        <div class="text-2xl font-bold brand-font tracking-widest cursor-pointer hover:text-[var(--color-1)] transition-colors magnetic-target">Ngv</div>
+        <div class="hidden md:flex space-x-8 text-sm font-bold tracking-widest">
+            <button onclick="scrollToSection('#home')" class="nav-btn hover:text-[var(--color-2)] transition-colors uppercase magnetic-target">01. Intro</button>
+            <button onclick="scrollToSection('#works')" class="nav-btn hover:text-[var(--color-2)] transition-colors uppercase magnetic-target">02. Works</button>
+            <button onclick="scrollToSection('#contact')" class="nav-btn hover:text-[var(--color-2)] transition-colors uppercase magnetic-target">03. Connect</button>
         </div>
+        <div class="md:hidden text-2xl magnetic-target">///</div>
+    </nav>
 
-        <div class="box" data-aos="fade-up" data-aos-delay="300">
-          <h3>quick links</h3>
-          <a href="/policy/privacy-policy.html" class="links">
-            <i class="fas fa-arrow-right"></i> Chính sách bảo mật
-          </a>
-          <a href="/policy/terms-of-service.html" class="links">
-            <i class="fas fa-arrow-right"></i> Điều khoản sử dụng
-          </a>
-          <a href="#aboutweb" class="links">
-            <i class="fas fa-arrow-right"></i> Add Bot
-          </a>
-          <a href="#achievements" class="links">
-            <i class="fas fa-arrow-right"></i> Discord
-          </a>
-          <a href="#about" class="links">
-            <i class="fas fa-arrow-right"></i> About me
-          </a>
+    <!-- SMOOTH SCROLL WRAPPER -->
+    <div id="smooth-wrapper">
+        <div id="smooth-content">
+
+            <!-- PAGE 1: HOME / INTRO -->
+            <section id="home" class="min-h-screen w-full flex items-center justify-center relative overflow-hidden border-b border-gray-900">
+                <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-[var(--color-1)] rounded-full blur-[150px] opacity-20 pointer-events-none animate-pulse" data-speed="0.5"></div>
+                <div class="absolute bottom-1/4 right-1/4 w-80 h-80 bg-[var(--color-2)] rounded-full blur-[150px] opacity-20 pointer-events-none" data-speed="0.8"></div>
+
+                <div class="container mx-auto px-6 relative z-10 text-center">
+                    <div class="overflow-hidden">
+                        <p class="text-[var(--color-2)] tracking-[0.5em] text-sm mb-4 reveal-text font-bold">DIGITAL EXPERIENCE</p>
+                    </div>
+                    
+                    <h1 class="text-6xl md:text-9xl font-bold leading-tight mb-6">
+                        <div class="line-clamp"><span class="reveal-text block glitch-text" data-text="BROKEN">BROKEN</span></div>
+                        <div class="line-clamp"><span class="reveal-text block glitch-text" data-text="COLORS">COLORS</span></div>
+                    </h1>
+
+                    <div class="max-w-xl mx-auto mt-8 overflow-hidden">
+                        <p class="text-gray-400 text-lg md:text-xl reveal-text leading-relaxed">
+                            Khám phá vẻ đẹp của sự không hoàn hảo. Nơi thuật toán gặp gỡ nghệ thuật, tạo nên những trải nghiệm web độc bản và sắc nét.
+                        </p>
+                    </div>
+
+                    <div class="mt-12 opacity-0 reveal-btn">
+                        <button onclick="scrollToSection('#works')" class="magnetic-target inline-block border border-[var(--color-2)] px-8 py-4 text-[var(--color-2)] hover:bg-[var(--color-2)] hover:text-black transition-all duration-300 tracking-widest text-sm font-bold">
+                            XEM DỰ ÁN
+                        </button>
+                    </div>
+                </div>
+
+                <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex flex-col items-center opacity-50 animate-bounce">
+                    <span class="text-xs tracking-widest mb-2">SCROLL</span>
+                    <div class="w-[1px] h-12 bg-white"></div>
+                </div>
+            </section>
+
+            <!-- PAGE 2: WORKS / SHOWCASE -->
+            <section id="works" class="min-h-screen w-full py-24 bg-[#080808] relative">
+                <div class="container mx-auto px-6">
+                    <div class="flex flex-col md:flex-row justify-between items-end mb-20 border-b border-gray-800 pb-8">
+                        <div data-speed="0.9">
+                            <span class="text-[var(--color-1)] font-mono text-sm">02 / PROJECTS</span>
+                            <h2 class="text-5xl md:text-7xl mt-2 glitch-text" data-text="SELECTED WORKS">SELECTED WORKS</h2>
+                        </div>
+                        <p class="text-gray-500 max-w-md mt-6 md:mt-0 text-right" data-speed="1.1">
+                            Tập hợp các thiết kế phá vỡ quy chuẩn thông thường. <br>Tương tác mượt mà, cảm xúc mạnh mẽ.
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24">
+                        <!-- Project 1 -->
+                        <div class="project-item group cursor-pointer" data-speed="1">
+                            <div class="prism-card w-full h-[60vh] md:h-[70vh] relative mb-6">
+                                <img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=2070&auto=format&fit=crop" alt="Abstract Art" class="w-full h-full object-cover">
+                                <div class="absolute bottom-0 left-0 p-8 z-20 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
+                                    <h3 class="text-4xl font-bold text-white mix-blend-difference">NEON SOUL</h3>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center text-gray-400 font-mono text-sm border-t border-gray-800 pt-4">
+                                <span>WEB DESIGN / 2024</span>
+                                <span>01</span>
+                            </div>
+                        </div>
+
+                        <!-- Project 2 -->
+                        <div class="project-item group cursor-pointer md:mt-32" data-speed="1.2">
+                            <div class="prism-card w-full h-[60vh] md:h-[70vh] relative mb-6">
+                                <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1964&auto=format&fit=crop" alt="Glitch Art" class="w-full h-full object-cover">
+                                <div class="absolute bottom-0 left-0 p-8 z-20 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
+                                    <h3 class="text-4xl font-bold text-white mix-blend-difference">VOID WALKER</h3>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center text-gray-400 font-mono text-sm border-t border-gray-800 pt-4">
+                                <span>CREATIVE CODING / 2025</span>
+                                <span>02</span>
+                            </div>
+                        </div>
+
+                        <!-- Project 3 -->
+                        <div class="project-item group cursor-pointer" data-speed="1">
+                             <div class="prism-card w-full h-[50vh] relative mb-6">
+                                <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070&auto=format&fit=crop" alt="Cyberpunk" class="w-full h-full object-cover">
+                                <div class="absolute bottom-0 left-0 p-8 z-20 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
+                                    <h3 class="text-4xl font-bold text-white mix-blend-difference">CYBER CORE</h3>
+                                </div>
+                            </div>
+                             <div class="flex justify-between items-center text-gray-400 font-mono text-sm border-t border-gray-800 pt-4">
+                                <span>UI/UX / 2024</span>
+                                <span>03</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PAGE 3: CONTACT -->
+            <section id="contact" class="min-h-screen w-full flex flex-col justify-between pt-32 pb-10 px-6 relative overflow-hidden">
+                 <div class="absolute inset-0 bg-gradient-to-b from-[#050505] to-[#0a0a0a] -z-10"></div>
+                 <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5" data-speed="0.5"></div>
+
+                <div class="container mx-auto h-full flex flex-col justify-center">
+                    <span class="text-[var(--color-3)] font-mono text-sm mb-4 block">03 / START A PROJECT</span>
+                    
+                    <a href="mailto:vothanhngu00@gmail.com" class="magnetic-target group relative block w-fit">
+                        <h2 class="text-[12vw] leading-[0.8] font-bold mix-blend-overlay opacity-50 group-hover:opacity-100 transition-opacity duration-500">
+                            Ngữ<br>@ngv
+                        </h2>
+                        <h2 class="text-[12vw] leading-[0.8] font-bold absolute top-0 left-0 text-[var(--color-3)] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pl-2 pointer-events-none mix-blend-difference" style="clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);">
+                            Ngữ<br>@ngv
+                        </h2>
+                    </a>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mt-24 border-t border-gray-800 pt-12">
+                        <div>
+                            <h4 class="text-xl font-bold mb-6">LIÊN HỆ</h4>
+                            <ul class="space-y-2 text-gray-400 font-mono">
+                                <li><span class="text-white">E:</span> vothanhngu00@gmail.com</li>
+                                <li><span class="text-white">P:</span> (+84) 353 256 039</li>
+                                <li><span class="text-white">A:</span> Tân An, Long An</li>
+                            </ul>
+                        </div>
+                        <div class="flex flex-col justify-end">
+                            <p class="text-2xl font-light text-gray-300">
+                                "Sự hoàn hảo nằm trong những mảnh vỡ."
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <footer class="mt-20 flex justify-between items-center text-xs text-gray-600 font-mono uppercase tracking-wider">
+                    <span>© 2021 Ngv.</span>
+                    <span>All Rights Reserved.</span>
+                </footer>
+            </section>
+        
         </div>
-
-        <div class="box" data-aos="fade-up" data-aos-delay="450">
-          <h3>contact info</h3>
-          <p><i class="fas fa-map"></i>Thủ Thừa, Long An, Việt Nam</p>
-          <p><i class="fas fa-phone"></i>+84 210106</p>
-          <p>
-            <i class="fas fa-envelope"></i>
-            <a
-              href="mailto:vothanhngu00@gmail.com"
-              >vothanhngu00@gmail.com</a
-            >
-          </p>
-          <p><i class="fas fa-clock"></i> 24/7</p>
-        </div>
-
-      </div>
-    </section>
-
-    <div class="credit">
-      created by <br /><span>Ngữ</span> <br />
     </div>
 
-    <script src="assets/js/index.js"></script>
-    <script
-      data-cfasync="false"
-      src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"
-    ></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <!-- LOGIC -->
     <script>
-      AOS.init({
-        duration: 800,
-        offset: 150,
-      });
+        gsap.registerPlugin(ScrollTrigger, ScrollToPlugin, ScrollSmoother);
+        let smoother;
+
+        // MP4 PRELOADER LOGIC
+        const video = document.getElementById('intro-video');
+        const enterBtn = document.getElementById('enter-btn');
+        const videoWrapper = document.getElementById('video-wrapper');
+
+        // Khi trang load xong
+        window.addEventListener("load", () => {
+             // Hiện video và nút sau khi DOM sẵn sàng
+             gsap.to(videoWrapper, { opacity: 1, duration: 1 });
+             gsap.to(enterBtn, { opacity: 1, duration: 1, delay: 0.5 });
+        });
+
+        // Xử lý nút ENTER
+        enterBtn.addEventListener('click', () => {
+            // Ẩn nút
+            gsap.to(enterBtn, { opacity: 0, duration: 0.3, onComplete: () => enterBtn.style.display = 'none' });
+            
+            // Bật tiếng và play video
+            video.muted = false;
+            video.currentTime = 0; // Phát lại từ đầu nếu nó đã chạy ngầm
+            video.play();
+
+            // Chạy 6 giây rồi tắt preloader vào web (hoặc đợi video ended nếu muốn)
+            setTimeout(() => {
+                finishPreloader();
+            }, 6000); 
+        });
+
+        function finishPreloader() {
+             gsap.to("#preload-loader", { 
+                  yPercent: -100, 
+                  duration: 1.2, 
+                  ease: "power4.inOut",
+                  onComplete: () => {
+                      document.getElementById("preload-loader").style.display = "none";
+                      video.pause(); // Dừng video tiết kiệm tài nguyên
+                      initSite(); // Khởi tạo trang chính
+                  }
+              });
+        }
+
+        // MAIN SITE INIT
+        function initSite() {
+            // Hiện nội dung chính
+            gsap.to("#smooth-wrapper", { opacity: 1, duration: 0.5 });
+            gsap.to("nav", { opacity: 1, duration: 0.5 });
+
+            // Init ScrollSmoother
+            smoother = ScrollSmoother.create({
+                wrapper: "#smooth-wrapper",
+                content: "#smooth-content",
+                smooth: 1.5,
+                effects: true,
+                smoothTouch: 0.1,
+            });
+
+            // Home Animations
+            const tlHome = gsap.timeline();
+            tlHome.from(".reveal-text", {
+                y: 100,
+                opacity: 0,
+                duration: 1.5,
+                stagger: 0.2,
+                ease: "power4.out"
+            })
+            .to(".reveal-btn", {
+                opacity: 1,
+                duration: 1,
+                ease: "power2.out"
+            }, "-=0.5");
+
+            // Project Animations
+            const projects = document.querySelectorAll('.project-item');
+            projects.forEach((project) => {
+                gsap.from(project, {
+                    scrollTrigger: {
+                        trigger: project,
+                        start: "top 90%",
+                        end: "bottom 20%",
+                        toggleActions: "play none none reverse"
+                    },
+                    y: 100,
+                    opacity: 0,
+                    duration: 1.2,
+                    ease: "power3.out"
+                });
+            });
+
+            // Glitch Loop
+            gsap.to(".glitch-text", {
+                keyframes: [
+                    { x: 0, opacity: 1 },
+                    { x: -2, opacity: 0.8 },
+                    { x: 2, opacity: 1 },
+                    { x: 0, opacity: 1 },
+                ],
+                duration: 0.2,
+                repeat: -1,
+                repeatDelay: 3,
+                ease: "steps(2)"
+            });
+
+            initMagneticButtons();
+        }
+
+        // MAGNETIC BUTTON LOGIC
+        function initMagneticButtons() {
+            const magnets = document.querySelectorAll('.magnetic-target');
+            magnets.forEach((magnet) => {
+                magnet.addEventListener('mousemove', (e) => {
+                    const bounding = magnet.getBoundingClientRect();
+                    const x = e.clientX - bounding.left - bounding.width / 2;
+                    const y = e.clientY - bounding.top - bounding.height / 2;
+                    gsap.to(magnet, { x: x * 0.3, y: y * 0.3, duration: 0.6, ease: "power3.out" });
+                });
+                magnet.addEventListener('mouseleave', () => {
+                    gsap.to(magnet, { x: 0, y: 0, duration: 0.6, ease: "elastic.out(1, 0.3)" });
+                });
+            });
+        }
+
+        function scrollToSection(id) {
+            if (smoother) smoother.scrollTo(id, true, "center center");
+            else document.querySelector(id)?.scrollIntoView({ behavior: 'smooth' });
+        }
     </script>
-<audio id="mysong">
-  <source src="nhac/super-idol-tet.mp3" type="audio/mp3">
-</audio>
-<script>
-  var mysong = document.getElementById("mysong");
-  var icon = document.getElementById("icon");
-  icon.onclick = function(){
-      if(mysong.paused){
-          mysong.play();
-      }else{
-          mysong.pause();
-      }
-  }
-</script>
-<audio id="song2">
-  <source src="nhac/nhac-gang.mp3" type="audio/mp3">
-</audio>
-<script>
-  var song2 = document.getElementById("song2");
-  var icon2 = document.getElementById("icon2");
-  icon2.onclick = function(){
-      if(song2.paused){
-          song2.play();
-      }else{
-          song2.pause();
-      }
-  }
-</script>
-  </body>
+</body>
 </html>
