@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NGV | Chăm chỉ - Trải nghiệm - Tự Do</title>
+    <title>PRISM | Broken Reality Design</title>
     
     <script>
         window.addEventListener('error', event => {
@@ -11,43 +11,31 @@
                 event.stopImmediatePropagation();
             }
         });
-        const originalError = console.error;
-        console.error = (...args) => {
-            if (/ResizeObserver loop completed with undelivered notifications/.test(args[0])) return;
-            originalError.call(console, ...args);
-        };
     </script>
 
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Space+Grotesk:wght@300;400;600&display=swap" rel="stylesheet">
 
-    <!-- GSAP Core & Plugins -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js"></script>
-    <script src="https://assets.codepen.io/16327/ScrollSmoother.min.js"></script>
 
     <link rel="stylesheet" href="styles.css">
 </head>
 <body class="antialiased" id="main-body">
 
-    <!-- PRELOADER (MP4 VIDEO) -->
     <div id="preload-loader">
         <div id="video-wrapper">
-            <!-- Video Rickroll MP4, muted ban đầu để browser cho phép autoplay background nếu cần, nhưng ta sẽ unmute khi click -->
-            <video id="intro-video" src="/video/rickroll.mp4" playsinline loop muted></video>
+            <video id="intro-video" src="/video/rickroll.mp4" playsinline muted loop></video>
         </div>
-        <button id="enter-btn">WELCOME!!!</button>
+        <button id="enter-btn">WELCOME!</button>
     </div>
 
-    <!-- NAVIGATION -->
-    <nav class="fixed top-0 left-0 w-full z-50 px-8 py-6 flex justify-between items-center mix-blend-difference text-white">
-        <div class="text-2xl font-bold brand-font tracking-widest cursor-pointer hover:text-[var(--color-1)] transition-colors magnetic-target">Ngv</div>
+    <nav class="fixed top-0 left-0 w-full z-50 px-8 py-6 flex justify-between items-center mix-blend-difference text-white opacity-0">
+        <div class="text-2xl font-bold brand-font tracking-widest cursor-pointer hover:text-[var(--color-1)] transition-colors magnetic-target">PRISM</div>
         <div class="hidden md:flex space-x-8 text-sm font-bold tracking-widest">
             <button onclick="scrollToSection('#home')" class="nav-btn hover:text-[var(--color-2)] transition-colors uppercase magnetic-target">01. Intro</button>
             <button onclick="scrollToSection('#works')" class="nav-btn hover:text-[var(--color-2)] transition-colors uppercase magnetic-target">02. Works</button>
@@ -56,177 +44,175 @@
         <div class="md:hidden text-2xl magnetic-target">///</div>
     </nav>
 
-    <!-- SMOOTH SCROLL WRAPPER -->
-    <div id="smooth-wrapper">
-        <div id="smooth-content">
-
-            <!-- PAGE 1: HOME / INTRO -->
-            <section id="home" class="min-h-screen w-full flex items-center justify-center relative overflow-hidden border-b border-gray-900">
-                <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-[var(--color-1)] rounded-full blur-[150px] opacity-20 pointer-events-none animate-pulse" data-speed="0.5"></div>
-                <div class="absolute bottom-1/4 right-1/4 w-80 h-80 bg-[var(--color-2)] rounded-full blur-[150px] opacity-20 pointer-events-none" data-speed="0.8"></div>
-
-                <div class="container mx-auto px-6 relative z-10 text-center">
-                    <div class="overflow-hidden">
-                        <p class="text-[var(--color-2)] tracking-[0.5em] text-sm mb-4 reveal-text font-bold">DIGITAL EXPERIENCE</p>
-                    </div>
-                    
-                    <h1 class="text-6xl md:text-9xl font-bold leading-tight mb-6">
-                        <div class="line-clamp"><span class="reveal-text block glitch-text" data-text="BROKEN">BROKEN</span></div>
-                        <div class="line-clamp"><span class="reveal-text block glitch-text" data-text="COLORS">COLORS</span></div>
-                    </h1>
-
-                    <div class="max-w-xl mx-auto mt-8 overflow-hidden">
-                        <p class="text-gray-400 text-lg md:text-xl reveal-text leading-relaxed">
-                            Khám phá vẻ đẹp của sự không hoàn hảo. Nơi thuật toán gặp gỡ nghệ thuật, tạo nên những trải nghiệm web độc bản và sắc nét.
-                        </p>
-                    </div>
-
-                    <div class="mt-12 opacity-0 reveal-btn">
-                        <button onclick="scrollToSection('#works')" class="magnetic-target inline-block border border-[var(--color-2)] px-8 py-4 text-[var(--color-2)] hover:bg-[var(--color-2)] hover:text-black transition-all duration-300 tracking-widest text-sm font-bold">
-                            XEM DỰ ÁN
-                        </button>
-                    </div>
-                </div>
-
-                <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex flex-col items-center opacity-50 animate-bounce">
-                    <span class="text-xs tracking-widest mb-2">SCROLL</span>
-                    <div class="w-[1px] h-12 bg-white"></div>
-                </div>
-            </section>
-
-            <!-- PAGE 2: WORKS / SHOWCASE -->
-            <section id="works" class="min-h-screen w-full py-24 bg-[#080808] relative">
-                <div class="container mx-auto px-6">
-                    <div class="flex flex-col md:flex-row justify-between items-end mb-20 border-b border-gray-800 pb-8">
-                        <div data-speed="0.9">
-                            <span class="text-[var(--color-1)] font-mono text-sm">02 / PROJECTS</span>
-                            <h2 class="text-5xl md:text-7xl mt-2 glitch-text" data-text="SELECTED WORKS">SELECTED WORKS</h2>
-                        </div>
-                        <p class="text-gray-500 max-w-md mt-6 md:mt-0 text-right" data-speed="1.1">
-                            Tập hợp các thiết kế phá vỡ quy chuẩn thông thường. <br>Tương tác mượt mà, cảm xúc mạnh mẽ.
-                        </p>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24">
-                        <!-- Project 1 -->
-                        <div class="project-item group cursor-pointer" data-speed="1">
-                            <div class="prism-card w-full h-[60vh] md:h-[70vh] relative mb-6">
-                                <img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=2070&auto=format&fit=crop" alt="Abstract Art" class="w-full h-full object-cover">
-                                <div class="absolute bottom-0 left-0 p-8 z-20 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
-                                    <h3 class="text-4xl font-bold text-white mix-blend-difference">NEON SOUL</h3>
-                                </div>
-                            </div>
-                            <div class="flex justify-between items-center text-gray-400 font-mono text-sm border-t border-gray-800 pt-4">
-                                <span>WEB DESIGN / 2024</span>
-                                <span>01</span>
-                            </div>
-                        </div>
-
-                        <!-- Project 2 -->
-                        <div class="project-item group cursor-pointer md:mt-32" data-speed="1.2">
-                            <div class="prism-card w-full h-[60vh] md:h-[70vh] relative mb-6">
-                                <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1964&auto=format&fit=crop" alt="Glitch Art" class="w-full h-full object-cover">
-                                <div class="absolute bottom-0 left-0 p-8 z-20 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
-                                    <h3 class="text-4xl font-bold text-white mix-blend-difference">VOID WALKER</h3>
-                                </div>
-                            </div>
-                            <div class="flex justify-between items-center text-gray-400 font-mono text-sm border-t border-gray-800 pt-4">
-                                <span>CREATIVE CODING / 2025</span>
-                                <span>02</span>
-                            </div>
-                        </div>
-
-                        <!-- Project 3 -->
-                        <div class="project-item group cursor-pointer" data-speed="1">
-                             <div class="prism-card w-full h-[50vh] relative mb-6">
-                                <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070&auto=format&fit=crop" alt="Cyberpunk" class="w-full h-full object-cover">
-                                <div class="absolute bottom-0 left-0 p-8 z-20 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
-                                    <h3 class="text-4xl font-bold text-white mix-blend-difference">CYBER CORE</h3>
-                                </div>
-                            </div>
-                             <div class="flex justify-between items-center text-gray-400 font-mono text-sm border-t border-gray-800 pt-4">
-                                <span>UI/UX / 2024</span>
-                                <span>03</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- PAGE 3: CONTACT -->
-            <section id="contact" class="min-h-screen w-full flex flex-col justify-between pt-32 pb-10 px-6 relative overflow-hidden">
-                 <div class="absolute inset-0 bg-gradient-to-b from-[#050505] to-[#0a0a0a] -z-10"></div>
-                 <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5" data-speed="0.5"></div>
-
-                <div class="container mx-auto h-full flex flex-col justify-center">
-                    <span class="text-[var(--color-3)] font-mono text-sm mb-4 block">03 / START A PROJECT</span>
-                    
-                    <a href="mailto:vothanhngu00@gmail.com" class="magnetic-target group relative block w-fit">
-                        <h2 class="text-[12vw] leading-[0.8] font-bold mix-blend-overlay opacity-50 group-hover:opacity-100 transition-opacity duration-500">
-                            Ngữ<br>@ngv
-                        </h2>
-                        <h2 class="text-[12vw] leading-[0.8] font-bold absolute top-0 left-0 text-[var(--color-3)] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pl-2 pointer-events-none mix-blend-difference" style="clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);">
-                            Ngữ<br>@ngv
-                        </h2>
-                    </a>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mt-24 border-t border-gray-800 pt-12">
-                        <div>
-                            <h4 class="text-xl font-bold mb-6">LIÊN HỆ</h4>
-                            <ul class="space-y-2 text-gray-400 font-mono">
-                                <li><span class="text-white">E:</span> vothanhngu00@gmail.com</li>
-                                <li><span class="text-white">P:</span> (+84) 353 256 039</li>
-                                <li><span class="text-white">A:</span> Tân An, Long An</li>
-                            </ul>
-                        </div>
-                        <div class="flex flex-col justify-end">
-                            <p class="text-2xl font-light text-gray-300">
-                                "Sự hoàn hảo nằm trong những mảnh vỡ."
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <footer class="mt-20 flex justify-between items-center text-xs text-gray-600 font-mono uppercase tracking-wider">
-                    <span>© 2021 Ngv.</span>
-                    <span>All Rights Reserved.</span>
-                </footer>
-            </section>
+    <div id="main-wrapper" class="w-full overflow-x-hidden opacity-0">
         
-        </div>
+        <section id="home" class="min-h-screen w-full flex items-center justify-center relative overflow-hidden border-b border-gray-900">
+            <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-[var(--color-1)] rounded-full blur-[150px] opacity-20 pointer-events-none animate-pulse" data-speed="0.5"></div>
+            <div class="absolute bottom-1/4 right-1/4 w-80 h-80 bg-[var(--color-2)] rounded-full blur-[150px] opacity-20 pointer-events-none" data-speed="0.8"></div>
+
+            <div class="container mx-auto px-6 relative z-10 text-center">
+                <div class="overflow-hidden">
+                    <p class="text-[var(--color-2)] tracking-[0.5em] text-sm mb-4 reveal-text font-bold">DIGITAL EXPERIENCE</p>
+                </div>
+                
+                <h1 class="text-6xl md:text-9xl font-bold leading-tight mb-6">
+                    <div class="line-clamp"><span class="reveal-text block glitch-text" data-text="BROKEN">BROKEN</span></div>
+                    <div class="line-clamp"><span class="reveal-text block glitch-text" data-text="COLORS">COLORS</span></div>
+                </h1>
+
+                <div class="max-w-xl mx-auto mt-8 overflow-hidden">
+                    <p class="text-gray-400 text-lg md:text-xl reveal-text leading-relaxed">
+                        Khám phá vẻ đẹp của sự không hoàn hảo. Nơi thuật toán gặp gỡ nghệ thuật, tạo nên những trải nghiệm web độc bản.
+                    </p>
+                </div>
+
+                <div class="mt-12 opacity-0 reveal-btn">
+                    <button onclick="scrollToSection('#works')" class="magnetic-target inline-block border border-[var(--color-2)] px-8 py-4 text-[var(--color-2)] hover:bg-[var(--color-2)] hover:text-black transition-all duration-300 tracking-widest text-sm font-bold">
+                        XEM DỰ ÁN
+                    </button>
+                </div>
+            </div>
+
+            <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex flex-col items-center opacity-50 animate-bounce">
+                <span class="text-xs tracking-widest mb-2">SCROLL</span>
+                <div class="w-[1px] h-12 bg-white"></div>
+            </div>
+        </section>
+
+        <section id="works" class="min-h-screen w-full py-24 bg-[#080808] relative">
+            <div class="container mx-auto px-6">
+                <div class="flex flex-col md:flex-row justify-between items-end mb-20 border-b border-gray-800 pb-8">
+                    <div>
+                        <span class="text-[var(--color-1)] font-mono text-sm">02 / PROJECTS</span>
+                        <h2 class="text-5xl md:text-7xl mt-2 glitch-text" data-text="SELECTED WORKS">SELECTED WORKS</h2>
+                    </div>
+                    <p class="text-gray-500 max-w-md mt-6 md:mt-0 text-right">
+                        Tập hợp các thiết kế phá vỡ quy chuẩn thông thường. <br>Tương tác mượt mà, cảm xúc mạnh mẽ.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24">
+                    <div class="project-item group cursor-pointer">
+                        <div class="prism-card w-full h-[60vh] md:h-[70vh] relative mb-6">
+                            <img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=2070&auto=format&fit=crop" alt="Abstract Art" class="w-full h-full object-cover">
+                            <div class="absolute bottom-0 left-0 p-8 z-20 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
+                                <h3 class="text-4xl font-bold text-white mix-blend-difference">NEON SOUL</h3>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center text-gray-400 font-mono text-sm border-t border-gray-800 pt-4">
+                            <span>WEB DESIGN / 2024</span>
+                            <span>01</span>
+                        </div>
+                    </div>
+
+                    <div class="project-item group cursor-pointer md:mt-32">
+                        <div class="prism-card w-full h-[60vh] md:h-[70vh] relative mb-6">
+                            <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1964&auto=format&fit=crop" alt="Glitch Art" class="w-full h-full object-cover">
+                            <div class="absolute bottom-0 left-0 p-8 z-20 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
+                                <h3 class="text-4xl font-bold text-white mix-blend-difference">VOID WALKER</h3>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center text-gray-400 font-mono text-sm border-t border-gray-800 pt-4">
+                            <span>CREATIVE CODING / 2025</span>
+                            <span>02</span>
+                        </div>
+                    </div>
+
+                    <div class="project-item group cursor-pointer">
+                            <div class="prism-card w-full h-[50vh] relative mb-6">
+                            <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070&auto=format&fit=crop" alt="Cyberpunk" class="w-full h-full object-cover">
+                            <div class="absolute bottom-0 left-0 p-8 z-20 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
+                                <h3 class="text-4xl font-bold text-white mix-blend-difference">CYBER CORE</h3>
+                            </div>
+                        </div>
+                            <div class="flex justify-between items-center text-gray-400 font-mono text-sm border-t border-gray-800 pt-4">
+                            <span>UI/UX / 2024</span>
+                            <span>03</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact" class="min-h-screen w-full flex flex-col justify-between pt-32 pb-10 px-6 relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-b from-[#050505] to-[#0a0a0a] -z-10"></div>
+                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5"></div>
+
+            <div class="container mx-auto h-full flex flex-col justify-center">
+                <span class="text-[var(--color-3)] font-mono text-sm mb-4 block">03 / START A PROJECT</span>
+                
+                <a href="mailto:vothanhngu00@gmail.com" class="magnetic-target group relative block w-fit">
+                    <h2 class="text-[12vw] leading-[0.8] font-bold mix-blend-overlay opacity-50 group-hover:opacity-100 transition-opacity duration-500">
+                        Ngữ<br>@ngv
+                    </h2>
+                    <h2 class="text-[12vw] leading-[0.8] font-bold absolute top-0 left-0 text-[var(--color-3)] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pl-2 pointer-events-none mix-blend-difference" style="clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);">
+                        Ngữ<br>@ngv
+                    </h2>
+                </a>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mt-24 border-t border-gray-800 pt-12">
+                    <div>
+                        <h4 class="text-xl font-bold mb-6">LIÊN HỆ</h4>
+                        <ul class="space-y-2 text-gray-400 font-mono">
+                            <li><span class="text-white">E:</span> vothanhngu00@gmail.com</li>
+                            <li><span class="text-white">P:</span> (+84) 353 256 039</li>
+                            <li><span class="text-white">A:</span> Tân An, Long An</li>
+                        </ul>
+                    </div>
+                    <div class="flex flex-col justify-end">
+                        <p class="text-2xl font-light text-gray-300">
+                            "Sự hoàn hảo nằm trong những mảnh vỡ."
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="mt-20 flex justify-between items-center text-xs text-gray-600 font-mono uppercase tracking-wider">
+                <span>© 2021 Ngv.</span>
+                <span>All Rights Reserved.</span>
+            </footer>
+        </section>
+    
     </div>
 
-    <!-- LOGIC -->
     <script>
-        gsap.registerPlugin(ScrollTrigger, ScrollToPlugin, ScrollSmoother);
-        let smoother;
+        gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
-        // MP4 PRELOADER LOGIC
         const video = document.getElementById('intro-video');
         const enterBtn = document.getElementById('enter-btn');
         const videoWrapper = document.getElementById('video-wrapper');
 
-        // Khi trang load xong
+        // Force hiện nút nếu video lỗi hoặc load quá lâu (Safe fallback)
+        setTimeout(() => {
+            if(getComputedStyle(enterBtn).opacity == 0) {
+                 gsap.to(enterBtn, { opacity: 1, duration: 0.5 });
+            }
+        }, 3000);
+
         window.addEventListener("load", () => {
-             // Hiện video và nút sau khi DOM sẵn sàng
              gsap.to(videoWrapper, { opacity: 1, duration: 1 });
              gsap.to(enterBtn, { opacity: 1, duration: 1, delay: 0.5 });
         });
 
-        // Xử lý nút ENTER
         enterBtn.addEventListener('click', () => {
-            // Ẩn nút
             gsap.to(enterBtn, { opacity: 0, duration: 0.3, onComplete: () => enterBtn.style.display = 'none' });
             
-            // Bật tiếng và play video
-            video.muted = false;
-            video.currentTime = 0; // Phát lại từ đầu nếu nó đã chạy ngầm
-            video.play();
+            // Cố gắng play video
+            const playPromise = video.play();
+            if (playPromise !== undefined) {
+                playPromise.then(_ => {
+                    video.muted = false;
+                }).catch(error => {
+                    console.log("Autoplay prevented or video error, skipping intro");
+                    finishPreloader(); // Nếu lỗi video thì vào thẳng web
+                    return;
+                });
+            }
 
-            // Chạy 6 giây rồi tắt preloader vào web (hoặc đợi video ended nếu muốn)
+            // Vào web sau 5s
             setTimeout(() => {
                 finishPreloader();
-            }, 6000); 
+            }, 5000); 
         });
 
         function finishPreloader() {
@@ -236,26 +222,16 @@
                   ease: "power4.inOut",
                   onComplete: () => {
                       document.getElementById("preload-loader").style.display = "none";
-                      video.pause(); // Dừng video tiết kiệm tài nguyên
-                      initSite(); // Khởi tạo trang chính
+                      video.pause(); 
+                      initSite();
                   }
               });
         }
 
-        // MAIN SITE INIT
         function initSite() {
-            // Hiện nội dung chính
-            gsap.to("#smooth-wrapper", { opacity: 1, duration: 0.5 });
+            // Hiệu ứng hiện nội dung
+            gsap.to("#main-wrapper", { opacity: 1, duration: 0.5 });
             gsap.to("nav", { opacity: 1, duration: 0.5 });
-
-            // Init ScrollSmoother
-            smoother = ScrollSmoother.create({
-                wrapper: "#smooth-wrapper",
-                content: "#smooth-content",
-                smooth: 1.5,
-                effects: true,
-                smoothTouch: 0.1,
-            });
 
             // Home Animations
             const tlHome = gsap.timeline();
@@ -272,7 +248,7 @@
                 ease: "power2.out"
             }, "-=0.5");
 
-            // Project Animations
+            // Scroll Animations (Thay thế data-speed của ScrollSmoother bằng Parallax thường)
             const projects = document.querySelectorAll('.project-item');
             projects.forEach((project) => {
                 gsap.from(project, {
@@ -289,7 +265,7 @@
                 });
             });
 
-            // Glitch Loop
+            // Glitch Effect
             gsap.to(".glitch-text", {
                 keyframes: [
                     { x: 0, opacity: 1 },
@@ -306,25 +282,26 @@
             initMagneticButtons();
         }
 
-        // MAGNETIC BUTTON LOGIC
         function initMagneticButtons() {
             const magnets = document.querySelectorAll('.magnetic-target');
-            magnets.forEach((magnet) => {
-                magnet.addEventListener('mousemove', (e) => {
-                    const bounding = magnet.getBoundingClientRect();
-                    const x = e.clientX - bounding.left - bounding.width / 2;
-                    const y = e.clientY - bounding.top - bounding.height / 2;
-                    gsap.to(magnet, { x: x * 0.3, y: y * 0.3, duration: 0.6, ease: "power3.out" });
+            // Chỉ chạy trên Desktop để tránh lỗi cảm ứng
+            if(window.innerWidth > 1024) {
+                magnets.forEach((magnet) => {
+                    magnet.addEventListener('mousemove', (e) => {
+                        const bounding = magnet.getBoundingClientRect();
+                        const x = e.clientX - bounding.left - bounding.width / 2;
+                        const y = e.clientY - bounding.top - bounding.height / 2;
+                        gsap.to(magnet, { x: x * 0.3, y: y * 0.3, duration: 0.6, ease: "power3.out" });
+                    });
+                    magnet.addEventListener('mouseleave', () => {
+                        gsap.to(magnet, { x: 0, y: 0, duration: 0.6, ease: "elastic.out(1, 0.3)" });
+                    });
                 });
-                magnet.addEventListener('mouseleave', () => {
-                    gsap.to(magnet, { x: 0, y: 0, duration: 0.6, ease: "elastic.out(1, 0.3)" });
-                });
-            });
+            }
         }
 
         function scrollToSection(id) {
-            if (smoother) smoother.scrollTo(id, true, "center center");
-            else document.querySelector(id)?.scrollIntoView({ behavior: 'smooth' });
+            gsap.to(window, {duration: 1, scrollTo: {y: id, offsetY: 0}, ease: "power3.inOut"});
         }
     </script>
 </body>
