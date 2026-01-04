@@ -6,17 +6,34 @@
     --color-3: #ccff00;
 }
 
-html {
-    scroll-behavior: smooth; /* Thay thế ScrollSmoother */
-}
+/* XÓA dòng này để không xung đột với GSAP */
+/* html { scroll-behavior: smooth; } */
 
 body {
     background-color: var(--bg-color);
     color: var(--text-color);
     font-family: 'Space Grotesk', sans-serif;
-    overflow-x: hidden;
+    /* ScrollSmoother sẽ tự xử lý overflow */
+    overflow: hidden !important; 
     margin: 0;
     padding: 0;
+}
+
+/* --- CẤU TRÚC BẮT BUỘC CHO SCROLLSMOOTHER --- */
+#smooth-wrapper {
+    overflow: hidden;
+    position: fixed;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
+    z-index: 1; /* Thấp hơn Nav và Preloader */
+}
+
+#smooth-content {
+    overflow: visible;
+    width: 100%;
+    will-change: transform;
 }
 
 h1, h2, h3, .brand-font {
@@ -31,7 +48,7 @@ h1, h2, h3, .brand-font {
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 9999;
+    z-index: 9999; /* Luôn nằm trên cùng */
     background: #000;
     display: flex;
     justify-content: center;
@@ -72,12 +89,14 @@ h1, h2, h3, .brand-font {
     opacity: 0; 
 }
 
-/* --- MAIN CONTENT --- */
-/* Mặc định opacity 0, sẽ được JS bật lên. Nếu JS lỗi, ít nhất body vẫn có màu nền */
-#main-wrapper, nav {
+/* --- NAV --- */
+/* Nav phải nằm ngoài smooth-wrapper nên cần z-index cao */
+nav {
+    z-index: 100;
     opacity: 0;
     transition: opacity 1s ease;
 }
+
 
 /* --- GLITCH TEXT --- */
 .glitch-text {
