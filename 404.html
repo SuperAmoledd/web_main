@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 | LOST SIGNAL</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Space+Grotesk:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #050505;
+            --text-color: #e0e0e0;
+            --color-1: #ff003c; /* Red */
+            --color-2: #00f0ff; /* Cyan */
+            --color-3: #ccff00; /* Lime */
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Space Grotesk', sans-serif;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .brand-font {
+            font-family: 'Syncopate', sans-serif;
+            text-transform: uppercase;
+        }
+
+        /* --- NOISE BACKGROUND --- */
+        #noise-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.05;
+            pointer-events: none;
+        }
+
+        /* --- GLITCH TEXT --- */
+        .glitch-wrapper {
+            position: relative;
+        }
+
+        .glitch-text {
+            position: relative;
+            color: white;
+            mix-blend-mode: lighten;
+            letter-spacing: -0.05em;
+        }
+
+        .glitch-text::before,
+        .glitch-text::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.8;
+            background: var(--bg-color);
+        }
+
+        .glitch-text::before {
+            left: -2px;
+            text-shadow: 2px 0 var(--color-1);
+            animation: glitch-anim-1 2s infinite linear alternate-reverse;
+        }
+
+        .glitch-text::after {
+            left: 2px;
+            text-shadow: -2px 0 var(--color-2);
+            animation: glitch-anim-2 3s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-anim-1 {
+            0% { clip-path: inset(20% 0 80% 0); }
+            20% { clip-path: inset(60% 0 10% 0); }
+            40% { clip-path: inset(40% 0 50% 0); }
+            60% { clip-path: inset(80% 0 5% 0); }
+            80% { clip-path: inset(10% 0 70% 0); }
+            100% { clip-path: inset(30% 0 20% 0); }
+        }
+
+        @keyframes glitch-anim-2 {
+            0% { clip-path: inset(10% 0 60% 0); }
+            20% { clip-path: inset(30% 0 10% 0); }
+            40% { clip-path: inset(80% 0 5% 0); }
+            60% { clip-path: inset(15% 0 80% 0); }
+            80% { clip-path: inset(60% 0 20% 0); }
+            100% { clip-path: inset(40% 0 50% 0); }
+        }
+
+        /* --- BUTTON --- */
+        .back-btn {
+            font-family: 'Syncopate', sans-serif;
+            font-size: 0.9rem;
+            letter-spacing: 0.2em;
+            color: var(--color-2);
+            border: 1px solid var(--color-2);
+            padding: 15px 40px;
+            background: rgba(0,0,0,0.4);
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .back-btn:hover {
+            background: var(--color-2);
+            color: #000;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+        }
+
+        /* Scanline effect */
+        .scanline {
+            width: 100%;
+            height: 100px;
+            z-index: 10;
+            background: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(0,0,0,0) 100%);
+            opacity: 0.1;
+            position: absolute;
+            bottom: 100%;
+            animation: scanline 10s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes scanline {
+            0% { bottom: 100%; }
+            100% { bottom: -100px; }
+        }
+        
+        .error-code {
+             font-size: clamp(8rem, 25vw, 20rem);
+             line-height: 0.8;
+             font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="noise-canvas"></canvas>
+    <div class="scanline"></div>
+
+    <div class="container relative z-10 flex flex-col items-center justify-center text-center p-6">
+        
+        <p class="text-[var(--color-1)] tracking-[0.5em] text-sm md:text-base font-bold mb-4 animate-pulse">
+            SYSTEM ERROR // SIGNAL LOST
+        </p>
+
+        <div class="glitch-wrapper mb-2">
+            <h1 class="error-code brand-font glitch-text" data-text="404">404</h1>
+        </div>
+
+        <div class="max-w-md mx-auto mb-12 relative">
+            <p class="text-xl md:text-2xl text-gray-400 mb-2">
+                Trang bạn tìm kiếm đã bị hỏng hoặc không tồn tại trong thực tại này.
+            </p>
+            <div class="h-[1px] w-full bg-gradient-to-r from-transparent via-[var(--color-1)] to-transparent opacity-50"></div>
+        </div>
+
+        <a href="/" class="magnetic-target inline-block">
+            <button class="back-btn font-bold">
+                RETURN TO REALITY
+            </button>
+        </a>
+
+        <div class="absolute bottom-10 text-xs text-gray-600 font-mono tracking-widest uppercase">
+            ERR_INTERNET_DISCONNECTED_FROM_REALITY
+        </div>
+    </div>
+
+    <script>
+        // --- Noise Canvas Effect ---
+        const canvas = document.getElementById('noise-canvas');
+        const ctx = canvas.getContext('2d');
+
+        const resizeCanvas = () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        };
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        const noise = () => {
+            const w = canvas.width;
+            const h = canvas.height;
+            const idata = ctx.createImageData(w, h);
+            const buffer32 = new Uint32Array(idata.data.buffer);
+            const len = buffer32.length;
+
+            for (let i = 0; i < len; i++) {
+                if (Math.random() < 0.5) {
+                    buffer32[i] = 0xff000000;
+                }
+            }
+            ctx.putImageData(idata, 0, 0);
+            requestAnimationFrame(noise);
+        };
+        
+        // Giảm tốc độ frame của noise để đỡ nặng máy
+        let frameCount = 0;
+        const animateNoise = () => {
+            frameCount++;
+            if(frameCount % 4 === 0) { // Update noise every 4 frames
+                const w = canvas.width;
+                const h = canvas.height;
+                const idata = ctx.createImageData(w, h);
+                const buffer32 = new Uint32Array(idata.data.buffer);
+                const len = buffer32.length;
+
+                for (let i = 0; i < len; i++) {
+                    if (Math.random() < 0.1) { // Mật độ noise thấp
+                         // White pixel with low alpha
+                        buffer32[i] = 0x10ffffff; 
+                    }
+                }
+                ctx.putImageData(idata, 0, 0);
+            }
+            requestAnimationFrame(animateNoise);
+        }
+        
+        animateNoise();
+
+        // --- Magnetic Button Effect (Copy từ index.html) ---
+        if(window.innerWidth > 1024) {
+            const magnet = document.querySelector('.magnetic-target');
+            if(magnet) {
+                magnet.addEventListener('mousemove', (e) => {
+                    const bounding = magnet.getBoundingClientRect();
+                    const x = e.clientX - bounding.left - bounding.width / 2;
+                    const y = e.clientY - bounding.top - bounding.height / 2;
+                    gsap.to(magnet, { x: x * 0.3, y: y * 0.3, duration: 0.6, ease: "power3.out" });
+                });
+                magnet.addEventListener('mouseleave', () => {
+                    gsap.to(magnet, { x: 0, y: 0, duration: 0.6, ease: "elastic.out(1, 0.3)" });
+                });
+            }
+        }
+
+        // --- Intro Animation ---
+        gsap.from(".glitch-text", {
+            scale: 1.5,
+            opacity: 0,
+            duration: 1,
+            ease: "elastic.out(1, 0.5)"
+        });
+        
+        gsap.from("p", {
+            y: 20,
+            opacity: 0,
+            duration: 0.8,
+            delay: 0.5
+        });
+
+        gsap.from(".back-btn", {
+            y: 20,
+            opacity: 0,
+            duration: 0.8,
+            delay: 0.8
+        });
+    </script>
+</body>
+</html>
