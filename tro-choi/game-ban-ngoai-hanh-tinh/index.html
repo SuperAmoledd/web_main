@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Space Defender Elite - Final Boss Update</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #020617;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            touch-action: none;
+        }
+        canvas { display: block; }
+        #ui-layer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            display: flex; flex-direction: column; justify-content: space-between;
+            padding: 15px; color: white; z-index: 10;
+        }
+        .menu-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(2, 6, 23, 0.98);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 50; pointer-events: auto;
+        }
+        .btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            padding: 12px 40px; border-radius: 12px; font-weight: bold;
+            cursor: pointer; transition: all 0.2s; border: 1px solid rgba(255,255,255,0.1);
+            color: white; font-size: 1.2rem; margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        }
+        .btn:active { transform: scale(0.95); }
+        .bar-container {
+            width: 180px; height: 10px; background: rgba(255,255,255,0.1);
+            border-radius: 5px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);
+        }
+        .hp-fill { height: 100%; background: #ef4444; width: 100%; transition: width 0.3s; }
+        .mp-fill { height: 100%; background: #3b82f6; width: 100%; transition: width 0.3s; }
+        .skill-btn {
+            width: 55px; height: 55px; background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.2); border-radius: 12px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-size: 9px; pointer-events: auto; cursor: pointer;
+        }
+        .skill-btn.active { border-color: #3b82f6; background: rgba(59, 130, 246, 0.2); }
+        #warning-text {
+            position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%);
+            color: #ef4444; font-weight: 900; font-size: 3rem; text-align: center;
+            text-shadow: 0 0 20px #ef4444; display: none; pointer-events: none; z-index: 40;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="warning-text">CẢNH BÁO: BOSS XUẤT HIỆN</div>
+
+    <div id="ui-layer">
+        <div class="flex justify-between items-start">
+            <div class="space-y-2">
+                <div>
+                    <div class="text-[10px] font-bold opacity-70 mb-1">MÁU (HP)</div>
+                    <div class="bar-container"><div id="hp-bar" class="hp-fill"></div></div>
+                </div>
+                <div>
+                    <div class="text-[10px] font-bold opacity-70 mb-1">NĂNG LƯỢNG (MP)</div>
+                    <div class="bar-container"><div id="mp-bar" class="mp-fill"></div></div>
+                </div>
+            </div>
+            <div class="text-right">
+                <div class="text-[10px] opacity-70">CẤP <span id="level-val">1</span> | ĐIỂM SỐ</div>
+                <div id="score-val" class="text-3xl font-black text-blue-400">0</div>
+            </div>
+        </div>
+
+        <div class="flex justify-center gap-4 pb-6">
+            <div id="skill-shift" class="skill-btn" onclick="dash()">
+                <span class="font-bold text-lg">SHIFT</span>
+                <span>LƯỚT</span>
+            </div>
+            <div id="skill-q" class="skill-btn" onclick="toggleShield()">
+                <span class="font-bold text-lg">Q</span>
+                <span>KHIÊN</span>
+            </div>
+            <div id="skill-e" class="skill-btn" onclick="useUltimate()">
+                <span class="font-bold text-lg">E</span>
+                <span>ULTI</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Start Screen -->
+    <div id="start-screen" class="menu-overlay">
+        <h1 class="text-6xl font-black mb-2 text-blue-500 italic tracking-tighter text-center">FINAL CONFRONTATION</h1>
+        <p class="text-gray-400 mb-8 text-sm uppercase tracking-widest text-center px-4">Đạt 5000 điểm để đối mặt với Boss Cuối</p>
+        <div class="grid grid-cols-2 gap-3 text-[11px] mb-8 w-full max-w-sm text-gray-400">
+            <div class="bg-white/5 p-3 rounded-xl border border-white/10">
+                <b class="text-white">LASER TỬ THẦN</b><br>-50% Máu khi trúng
+            </div>
+            <div class="bg-white/5 p-3 rounded-xl border border-white/10">
+                <b class="text-white">SIÊU BOSS [5K]</b><br>Sức mạnh tối thượng
+            </div>
+            <div class="bg-white/5 p-3 rounded-xl border border-white/10">
+                <b class="text-white">LƯỚT [SHIFT]</b><br>Né tránh tia laze
+            </div>
+            <div class="bg-white/5 p-3 rounded-xl border border-white/10">
+                <b class="text-white">KHIÊN [Q]</b><br>Giảm sát thương laze
+            </div>
+        </div>
+        <button class="btn" onclick="startGame()">KHỞI ĐỘNG CHIẾN ĐẤU</button>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="game-over-screen" class="menu-overlay" style="display: none;">
+        <h2 class="text-4xl font-black mb-2 text-red-500 italic">PHI THUYỀN BỊ PHÁ HỦY</h2>
+        <div class="text-xl mb-6 text-gray-400">Điểm số cuối cùng: <span id="final-score" class="text-white font-bold">0</span></div>
+        <button class="btn" onclick="startGame()">KHÔI PHỤC HỆ THỐNG</button>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score-val');
+        const hpBar = document.getElementById('hp-bar');
+        const mpBar = document.getElementById('mp-bar');
+        const levelEl = document.getElementById('level-val');
+        const warningEl = document.getElementById('warning-text');
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const finalScoreEl = document.getElementById('final-score');
+
+        let gameActive = false;
+        let score = 0;
+        let level = 1;
+        let shakeAmount = 0;
+        let nextBossScore = 1500;
+        let bossSpawnedAt5000 = false;
+        
+        let stars = [];
+        let particles = [];
+        let engineParticles = [];
+        let projectiles = [];
+        let enemyProjectiles = [];
+        let enemies = [];
+        let drops = [];
+        let floatingTexts = [];
+        let animationId;
+
+        const player = {
+            x: 0, y: 0,
+            width: 32, height: 32,
+            speed: 7.5,
+            dashDistance: 130,
+            hp: 100, maxHp: 100,
+            mp: 50, maxMp: 100,
+            mpRegen: 0.15,
+            shieldActive: false,
+            lastShot: 0,
+            shotDelay: 160,
+            moving: { left: false, right: false, up: false, down: false }
+        };
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            initStars();
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        function initStars() {
+            stars = [];
+            for (let i = 0; i < 150; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 2,
+                    speed: Math.random() * 3 + 1
+                });
+            }
+        }
+
+        // Input
+        window.addEventListener('keydown', e => {
+            if (e.key === 'a' || e.key === 'ArrowLeft') player.moving.left = true;
+            if (e.key === 'd' || e.key === 'ArrowRight') player.moving.right = true;
+            if (e.key === 'w' || e.key === 'ArrowUp') player.moving.up = true;
+            if (e.key === 's' || e.key === 'ArrowDown') player.moving.down = true;
+            if (e.key === 'Shift') dash();
+            if (e.key === 'q' || e.key === 'Q') toggleShield();
+            if (e.key === 'e' || e.key === 'E') useUltimate();
+        });
+
+        window.addEventListener('keyup', e => {
+            if (e.key === 'a' || e.key === 'ArrowLeft') player.moving.left = false;
+            if (e.key === 'd' || e.key === 'ArrowRight') player.moving.right = false;
+            if (e.key === 'w' || e.key === 'ArrowUp') player.moving.up = false;
+            if (e.key === 's' || e.key === 'ArrowDown') player.moving.down = false;
+        });
+
+        window.addEventListener('pointermove', e => {
+            if (gameActive) {
+                player.x += (e.clientX - player.x) * 0.15;
+                player.y += (e.clientY - player.y) * 0.15;
+            }
+        });
+
+        function dash() {
+            if (!gameActive || player.mp < 15) return;
+            player.mp -= 15;
+            let dx = 0, dy = 0;
+            if (player.moving.left) dx = -1;
+            if (player.moving.right) dx = 1;
+            if (player.moving.up) dy = -1;
+            if (player.moving.down) dy = 1;
+            if (dx === 0 && dy === 0) dy = -1;
+            const mag = Math.sqrt(dx*dx + dy*dy);
+            player.x += (dx/mag) * player.dashDistance;
+            player.y += (dy/mag) * player.dashDistance;
+            createExplosion(player.x, player.y, '#3b82f6', 12);
+            shakeAmount = 6;
+        }
+
+        function toggleShield() {
+            if (!gameActive) return;
+            player.shieldActive = !player.shieldActive;
+            if (player.shieldActive && player.mp > 10) document.getElementById('skill-q').classList.add('active');
+            else { player.shieldActive = false; document.getElementById('skill-q').classList.remove('active'); }
+        }
+
+        function useUltimate() {
+            if (gameActive && player.mp >= 50) {
+                player.mp -= 50; shakeAmount = 30;
+                showWarning("ULTIMATE BURST", 800);
+                for(let i = 0; i < 90; i++) {
+                    const angle = (i * 4) * (Math.PI / 180);
+                    projectiles.push({ x: player.x, y: player.y, radius: 6, velocity: { x: Math.cos(angle) * 14, y: Math.sin(angle) * 14 }, color: '#f472b6', damage: 180 });
+                }
+            }
+        }
+
+        function addFloatingText(x, y, text, color) { floatingTexts.push({ x, y, text, color, alpha: 1, speedY: -1.2 }); }
+
+        function showWarning(text, duration) {
+            warningEl.innerText = text; warningEl.style.display = 'block';
+            setTimeout(() => { warningEl.style.display = 'none'; }, duration);
+        }
+
+        function shoot() {
+            const now = Date.now();
+            if (now - player.lastShot > player.shotDelay) {
+                const count = Math.min(5, Math.floor(score / 5000) + 1);
+                for(let i = 0; i < count; i++) {
+                    const offset = (i - (count - 1) / 2) * 14;
+                    projectiles.push({ x: player.x + offset, y: player.y - 15, radius: 3, velocity: { x: 0, y: -15 }, color: '#60a5fa', damage: 25 + level * 5 });
+                }
+                player.lastShot = now;
+                engineParticles.push({ x: player.x, y: player.y + 15, radius: Math.random()*5, color: '#3b82f6', alpha: 0.8, vx: (Math.random()-0.5)*2, vy: 3 });
+            }
+        }
+
+        function update() {
+            if (!gameActive) return;
+
+            shakeAmount *= 0.9;
+            ctx.save();
+            ctx.translate((Math.random()-0.5)*shakeAmount, (Math.random()-0.5)*shakeAmount);
+            
+            ctx.fillStyle = '#020617';
+            ctx.fillRect(-50, -50, canvas.width + 100, canvas.height + 100);
+
+            stars.forEach(s => {
+                s.y += s.speed;
+                if (s.y > canvas.height) { s.y = 0; s.x = Math.random()*canvas.width; }
+                ctx.fillStyle = 'rgba(255,255,255,0.4)'; ctx.fillRect(s.x, s.y, s.size, s.size);
+            });
+
+            // Player logic
+            if (player.moving.left) player.x -= player.speed;
+            if (player.moving.right) player.x += player.speed;
+            if (player.moving.up) player.y -= player.speed;
+            if (player.moving.down) player.y += player.speed;
+            player.x = Math.max(20, Math.min(canvas.width - 20, player.x));
+            player.y = Math.max(20, Math.min(canvas.height - 20, player.y));
+
+            if (player.shieldActive) {
+                player.mp -= 0.5;
+                if (player.mp <= 0) toggleShield();
+            } else if (player.mp < player.maxMp) player.mp += player.mpRegen;
+
+            drawPlayer();
+            shoot();
+
+            // Floating Text
+            floatingTexts.forEach((ft, i) => {
+                ft.y += ft.speedY; ft.alpha -= 0.02;
+                if (ft.alpha <= 0) floatingTexts.splice(i, 1);
+                else { ctx.globalAlpha = ft.alpha; ctx.fillStyle = ft.color; ctx.font = 'bold 15px Arial'; ctx.textAlign = 'center'; ctx.fillText(ft.text, ft.x, ft.y); ctx.globalAlpha = 1; }
+            });
+
+            // Projectiles
+            projectiles.forEach((p, i) => {
+                p.x += p.velocity.x; p.y += p.velocity.y;
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI*2);
+                ctx.fillStyle = p.color; ctx.shadowBlur = 10; ctx.shadowColor = p.color;
+                ctx.fill(); ctx.shadowBlur = 0;
+                if (p.y < -50 || p.y > canvas.height + 50 || p.x < -50 || p.x > canvas.width + 50) projectiles.splice(i, 1);
+            });
+
+            // Enemy Projectiles
+            enemyProjectiles.forEach((ep, i) => {
+                ep.x += ep.vx; ep.y += ep.vy;
+                ctx.fillStyle = ep.color || '#f87171';
+                ctx.beginPath(); ctx.arc(ep.x, ep.y, ep.radius || 4, 0, Math.PI*2); ctx.fill();
+                if (Math.hypot(ep.x - player.x, ep.y - player.y) < 25) {
+                    if (player.shieldActive) { player.mp -= (ep.damage || 10) * 0.5; shakeAmount = 4; }
+                    else { player.hp -= ep.damage || 15; shakeAmount = 15; addFloatingText(player.x, player.y - 20, `-${ep.damage || 15}`, "#f87171"); }
+                    enemyProjectiles.splice(i, 1);
+                    if (player.hp <= 0) endGame();
+                }
+                if (ep.y > canvas.height + 150 || ep.y < -150 || ep.x < -150 || ep.x > canvas.width + 150) enemyProjectiles.splice(i, 1);
+            });
+
+            // Enemies (including Boss)
+            enemies.forEach((enemy, i) => {
+                enemy.x += enemy.vx; enemy.y += enemy.vy;
+                
+                if (enemy.isBoss) {
+                    drawBoss(enemy);
+                    if (enemy.y < enemy.targetY) enemy.y += 1.2;
+                    if (enemy.x < 100 || enemy.x > canvas.width - 100) enemy.vx *= -1;
+                    
+                    const now = Date.now();
+                    
+                    // Logic Boss Cuối Laze
+                    if (enemy.bossType === 'final') {
+                        if (!enemy.laserState) {
+                            enemy.laserState = 'idle';
+                            enemy.laserTimer = now;
+                        }
+
+                        if (enemy.laserState === 'idle' && now - enemy.laserTimer > 4000) {
+                            enemy.laserState = 'charging';
+                            enemy.laserTimer = now;
+                            showWarning("CẢNH BÁO: PHÁT HIỆN NĂNG LƯỢNG CAO", 1500);
+                        } else if (enemy.laserState === 'charging' && now - enemy.laserTimer > 2000) {
+                            enemy.laserState = 'firing';
+                            enemy.laserTimer = now;
+                            shakeAmount = 15;
+                        } else if (enemy.laserState === 'firing' && now - enemy.laserTimer > 1500) {
+                            enemy.laserState = 'idle';
+                            enemy.laserTimer = now;
+                            enemy.laserDamaged = false;
+                        }
+
+                        // Vẽ hiệu ứng Laze
+                        if (enemy.laserState === 'charging') {
+                            ctx.save();
+                            ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';
+                            ctx.setLineDash([5, 5]);
+                            ctx.lineWidth = 2;
+                            ctx.beginPath();
+                            ctx.moveTo(enemy.x, enemy.y + 40);
+                            ctx.lineTo(enemy.x, canvas.height);
+                            ctx.stroke();
+                            ctx.restore();
+                        } else if (enemy.laserState === 'firing') {
+                            ctx.save();
+                            const gradient = ctx.createLinearGradient(enemy.x - 30, 0, enemy.x + 30, 0);
+                            gradient.addColorStop(0, 'rgba(255, 0, 0, 0)');
+                            gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.9)');
+                            gradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
+                            
+                            ctx.fillStyle = 'rgba(239, 68, 68, 0.8)';
+                            ctx.shadowBlur = 40;
+                            ctx.shadowColor = 'red';
+                            ctx.fillRect(enemy.x - 40, enemy.y + 40, 80, canvas.height);
+                            
+                            ctx.fillStyle = 'white';
+                            ctx.fillRect(enemy.x - 10, enemy.y + 40, 20, canvas.height);
+                            ctx.restore();
+
+                            // Kiểm tra va chạm Laze
+                            if (!enemy.laserDamaged && Math.abs(player.x - enemy.x) < 50) {
+                                let damage = 50;
+                                if (player.shieldActive) {
+                                    damage = 25;
+                                    player.mp -= 30;
+                                }
+                                player.hp -= damage;
+                                enemy.laserDamaged = true; // Chỉ trúng 1 lần mỗi đợt bắn
+                                shakeAmount = 25;
+                                addFloatingText(player.x, player.y - 30, `-${damage} HP (LAZE)`, "#f00");
+                                if (player.hp <= 0) endGame();
+                            }
+                        }
+                    }
+
+                    // Boss normal/god shooting
+                    if (now - enemy.lastShot > enemy.shotInterval) {
+                        const bossType = enemy.bossType;
+                        if (bossType === 'final') {
+                            // Skill đạn phụ cho Boss cuối
+                            for(let a=0; a<12; a++) {
+                                const ang = (a*30) * (Math.PI/180);
+                                enemyProjectiles.push({x: enemy.x, y: enemy.y, vx: Math.cos(ang)*4, vy: Math.sin(ang)*4, color: '#f87171', radius: 4, damage: 15});
+                            }
+                        } else if (bossType === 'god') {
+                            for(let a=0; a<24; a++) {
+                                const ang = (a*15) * (Math.PI/180);
+                                enemyProjectiles.push({x: enemy.x, y: enemy.y, vx: Math.cos(ang)*6, vy: Math.sin(ang)*6, color: '#a855f7', radius: 6, damage: 30});
+                            }
+                            const pAng = Math.atan2(player.y - enemy.y, player.x - enemy.x);
+                            enemyProjectiles.push({x: enemy.x, y: enemy.y, vx: Math.cos(pAng)*12, vy: Math.sin(pAng)*12, color: '#ef4444', radius: 8, damage: 40});
+                        } else if (bossType === 'mini') {
+                            const pAng = Math.atan2(player.y - enemy.y, player.x - enemy.x);
+                            enemyProjectiles.push({x: enemy.x, y: enemy.y, vx: Math.cos(pAng)*7, vy: Math.sin(pAng)*7, damage: 20});
+                        } else {
+                            for(let a=-3; a<=3; a++) enemyProjectiles.push({x: enemy.x, y: enemy.y, vx: a*1.8, vy: 5, damage: 25});
+                        }
+                        enemy.lastShot = now;
+                    }
+                } else {
+                    if (enemy.type === 'scout') enemy.vx = Math.sin(enemy.y / 40) * 5;
+                    drawEnemy(enemy);
+                }
+
+                // Hit detection
+                projectiles.forEach((p, pi) => {
+                    if (Math.hypot(p.x - enemy.x, p.y - enemy.y) < (enemy.width/2 + p.radius)) {
+                        enemy.hp -= p.damage;
+                        addFloatingText(enemy.x, enemy.y, `-${p.damage}`, enemy.isBoss ? "#fbbf24" : "#fff");
+                        projectiles.splice(pi, 1);
+                        if (enemy.hp <= 0) {
+                            score += enemy.points;
+                            if (Math.random() > 0.6) spawnDrop(enemy.x, enemy.y);
+                            createExplosion(enemy.x, enemy.y, enemy.color, enemy.isBoss ? 120 : 15);
+                            if (enemy.isBoss) { 
+                                if (enemy.bossType === 'final') {
+                                    level += 5;
+                                    nextBossScore += 10000;
+                                    showWarning("ULTIMATE OVERLORD DEFEATED!", 3000);
+                                } else if (enemy.bossType === 'god') { 
+                                    level += 2; nextBossScore += 4000; 
+                                } else { 
+                                    level++; nextBossScore += 2500; 
+                                }
+                                levelEl.innerText = level;
+                            }
+                            enemies.splice(i, 1); scoreEl.innerText = score;
+                        }
+                    }
+                });
+
+                if (Math.hypot(player.x - enemy.x, player.y - enemy.y) < (enemy.isBoss ? 80 : 30)) {
+                    if (player.shieldActive) player.mp -= 2; else player.hp -= 4;
+                    if (player.hp <= 0) endGame();
+                }
+                if (enemy.y > canvas.height + 200) enemies.splice(i, 1);
+            });
+
+            // Milestone Spawning
+            if (score >= 5000 && !bossSpawnedAt5000) {
+                // Xóa bớt quái nhỏ để tập trung đấu Boss
+                enemies = enemies.filter(e => e.isBoss);
+                bossSpawnedAt5000 = true;
+                showWarning("CẢNH BÁO: THỰC THỂ TỐI CAO XUẤT HIỆN", 3000);
+                setTimeout(() => spawnBoss('final'), 3000);
+            } else if (score >= nextBossScore && !enemies.some(e => e.bossType === 'normal' || e.bossType === 'god' || e.bossType === 'final')) {
+                const type = (score >= 10000 && level % 3 === 0) ? 'god' : 'normal';
+                showWarning(type === 'god' ? "THẦN HỦY DIỆT TRỞ LẠI!" : "BOSS CHIẾN ĐỘI XUẤT HIỆN!", 2000);
+                setTimeout(() => spawnBoss(type), 2000);
+            }
+
+            if (Math.random() < 0.001 && !enemies.some(e => e.bossType === 'mini')) {
+                spawnBoss('mini');
+            }
+
+            drops.forEach((d, i) => {
+                d.y += 2.5;
+                ctx.fillStyle = d.type === 'hp' ? '#ef4444' : '#3b82f6';
+                ctx.beginPath(); ctx.arc(d.x, d.y, 9, 0, Math.PI*2); ctx.fill();
+                ctx.strokeStyle = 'white'; ctx.lineWidth = 2; ctx.stroke();
+                if (Math.hypot(player.x - d.x, player.y - d.y) < 35) {
+                    if (d.type === 'hp') { player.hp = Math.min(100, player.hp + 30); addFloatingText(player.x, player.y, "+30 HP", "#ef4444"); }
+                    else { player.mp = Math.min(100, player.mp + 50); addFloatingText(player.x, player.y, "+50 MP", "#3b82f6"); }
+                    drops.splice(i, 1);
+                }
+                if (d.y > canvas.height + 50) drops.splice(i, 1);
+            });
+
+            [particles, engineParticles].forEach(list => {
+                list.forEach((p, i) => {
+                    p.x += (p.vx || 0); p.y += (p.vy || 0); p.alpha -= 0.025;
+                    if (p.alpha <= 0) list.splice(i, 1);
+                    else { ctx.globalAlpha = p.alpha; ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI*2); ctx.fill(); ctx.globalAlpha = 1; }
+                });
+            });
+
+            hpBar.style.width = `${player.hp}%`; mpBar.style.width = `${player.mp}%`;
+            if (player.hp < 35) hpBar.style.boxShadow = "0 0 15px #ef4444"; else hpBar.style.boxShadow = "none";
+
+            ctx.restore();
+            animationId = requestAnimationFrame(update);
+        }
+
+        function drawPlayer() {
+            ctx.save(); ctx.translate(player.x, player.y);
+            if (player.shieldActive) {
+                ctx.beginPath(); ctx.arc(0, 0, 45, 0, Math.PI*2);
+                ctx.strokeStyle = `rgba(59, 130, 246, ${0.5 + Math.random()*0.4})`;
+                ctx.lineWidth = 4; ctx.stroke(); ctx.fillStyle = 'rgba(59, 130, 246, 0.15)'; ctx.fill();
+            }
+            ctx.fillStyle = '#3b82f6'; ctx.shadowBlur = 20; ctx.shadowColor = '#3b82f6';
+            ctx.beginPath(); ctx.moveTo(0, -22); ctx.lineTo(20, 15); ctx.lineTo(0, 7); ctx.lineTo(-20, 15); ctx.closePath(); ctx.fill();
+            ctx.fillStyle = 'white'; ctx.beginPath(); ctx.arc(0, -3, 5, 0, Math.PI*2); ctx.fill();
+            ctx.restore();
+        }
+
+        function drawEnemy(enemy) {
+            ctx.save(); ctx.translate(enemy.x, enemy.y); ctx.fillStyle = enemy.color;
+            if (enemy.type === 'scout') { ctx.beginPath(); ctx.moveTo(0, -14); ctx.lineTo(14, 14); ctx.lineTo(-14, 14); ctx.closePath(); }
+            else if (enemy.type === 'tank') { ctx.fillRect(-18, -18, 36, 36); ctx.strokeStyle = 'white'; ctx.strokeRect(-18, -18, 36, 36); }
+            else { ctx.beginPath(); ctx.moveTo(0, 18); ctx.lineTo(18, -12); ctx.lineTo(-18, -12); ctx.closePath(); }
+            ctx.fill(); ctx.restore();
+        }
+
+        function drawBoss(boss) {
+            ctx.save(); ctx.translate(boss.x, boss.y);
+            const isGod = boss.bossType === 'god';
+            const isMini = boss.bossType === 'mini';
+            const isFinal = boss.bossType === 'final';
+            
+            ctx.fillStyle = boss.color; ctx.shadowBlur = isFinal ? 60 : (isGod ? 40 : 25); ctx.shadowColor = boss.color;
+            ctx.beginPath(); 
+            if (isFinal) {
+                // Dáng vẻ Boss Cuối Overlord
+                ctx.moveTo(-120, -40); ctx.lineTo(-60, -80); ctx.lineTo(60, -80); ctx.lineTo(120, -40);
+                ctx.lineTo(140, 40); ctx.lineTo(0, 100); ctx.lineTo(-140, 40);
+            } else if (isGod) {
+                for(let i=0; i<6; i++) {
+                    const ang = (i*60) * (Math.PI/180);
+                    const r = 100 + Math.sin(Date.now()/200)*10;
+                    const x = Math.cos(ang)*r, y = Math.sin(ang)*r;
+                    if(i===0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                }
+            } else if (isMini) {
+                ctx.moveTo(-30, -30); ctx.lineTo(30, -30); ctx.lineTo(0, 30);
+            } else {
+                ctx.moveTo(-80, -30); ctx.lineTo(80, -30); ctx.lineTo(100, 30); ctx.lineTo(0, 70); ctx.lineTo(-100, 30);
+            }
+            ctx.closePath(); ctx.fill();
+            
+            if (isFinal) {
+                // Hiệu ứng mắt Boss cuối
+                ctx.fillStyle = 'white';
+                const pulse = Math.abs(Math.sin(Date.now()/300)) * 10;
+                ctx.beginPath(); ctx.arc(-40, -10, 8 + pulse, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(40, -10, 8 + pulse, 0, Math.PI*2); ctx.fill();
+            } else {
+                ctx.fillStyle = 'black'; ctx.globalAlpha = 0.5; ctx.beginPath(); ctx.arc(0, 0, isGod ? 40 : 20, 0, Math.PI*2); ctx.fill();
+            }
+            
+            // HP Bar
+            ctx.restore();
+            const hpW = isFinal ? 300 : (isGod ? 240 : (isMini ? 80 : 160));
+            ctx.fillStyle = 'rgba(255,255,255,0.1)'; ctx.fillRect(boss.x - hpW/2, boss.y - (isFinal ? 140 : (isGod ? 120 : 80)), hpW, 8);
+            ctx.fillStyle = boss.color; ctx.fillRect(boss.x - hpW/2, boss.y - (isFinal ? 140 : (isGod ? 120 : 80)), hpW * (boss.hp/boss.maxHp), 8);
+        }
+
+        function createExplosion(x, y, color, count) {
+            for(let i=0; i<count; i++) {
+                particles.push({ x, y, color, alpha: 1, radius: Math.random()*5, vx: (Math.random()-0.5)*18, vy: (Math.random()-0.5)*18 });
+            }
+        }
+
+        function spawnEnemy() {
+            if (!gameActive || enemies.some(e => e.bossType === 'normal' || e.bossType === 'god' || e.bossType === 'final')) {
+                setTimeout(spawnEnemy, 1000); return;
+            }
+            const r = Math.random();
+            let type = 'normal', hp = 50, points = 50, color = '#94a3b8';
+            if (r > 0.85) { type = 'tank'; hp = 200; points = 200; color = '#475569'; }
+            else if (r > 0.65) { type = 'scout'; hp = 40; points = 120; color = '#fbbf24'; }
+            enemies.push({ x: Math.random() * (canvas.width - 60) + 30, y: -50, width: 35, height: 35, type, points, vx: type === 'scout' ? 0 : (Math.random()-0.5)*4, vy: 2.2 + level*0.5, hp: hp + level*40, color, isBoss: false });
+            setTimeout(spawnEnemy, Math.max(300, 1300 - (score/30)));
+        }
+
+        function spawnBoss(type) {
+            const isGod = type === 'god';
+            const isMini = type === 'mini';
+            const isFinal = type === 'final';
+            enemies.push({
+                x: canvas.width/2, y: -250, targetY: isFinal ? 180 : (isGod ? 150 : 120),
+                width: isFinal ? 280 : (isGod ? 200 : (isMini ? 60 : 160)), 
+                height: isFinal ? 180 : (isGod ? 200 : (isMini ? 60 : 100)),
+                points: isFinal ? 25000 : (isGod ? 10000 : (isMini ? 800 : 3000)),
+                vx: isFinal ? 2 : (isGod ? 4 : (isMini ? 6 : 3)), vy: 0,
+                hp: (isFinal ? 30000 : (isGod ? 12000 : (isMini ? 1000 : 3500))) + level*1500,
+                maxHp: (isFinal ? 30000 : (isGod ? 12000 : (isMini ? 1000 : 3500))) + level*1500,
+                color: isFinal ? '#ff0000' : (isGod ? '#a855f7' : (isMini ? '#10b981' : '#ef4444')),
+                isBoss: true, bossType: type, lastShot: 0,
+                shotInterval: isFinal ? 400 : (isGod ? 500 : (isMini ? 800 : 1000))
+            });
+        }
+
+        function spawnDrop(x, y) { drops.push({ x, y, type: Math.random() > 0.5 ? 'hp' : 'mp' }); }
+
+        function startGame() {
+            gameActive = true; score = 0; level = 1; nextBossScore = 1500; bossSpawnedAt5000 = false;
+            player.hp = 100; player.mp = 50;
+            enemies = []; projectiles = []; enemyProjectiles = []; particles = []; engineParticles = []; drops = []; floatingTexts = [];
+            scoreEl.innerText = "0"; levelEl.innerText = "1";
+            startScreen.style.display = 'none'; gameOverScreen.style.display = 'none';
+            player.x = canvas.width / 2; player.y = canvas.height - 100;
+            cancelAnimationFrame(animationId); update(); spawnEnemy();
+        }
+
+        function endGame() {
+            gameActive = false; finalScoreEl.innerText = score;
+            gameOverScreen.style.display = 'flex'; cancelAnimationFrame(animationId);
+        }
+    </script>
+</body>
+</html>
