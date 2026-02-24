@@ -23,11 +23,11 @@
 </head>
 <body class="antialiased" id="main-body">
 
-    <div id="preload-loader">
-        <div id="video-wrapper">
-            <video id="intro-video" src="/video/rickroll.mp4" playsinline muted loop></video>
+    <div id="preload-loader" class="fixed inset-0 z-[100] bg-[#050505] flex flex-col items-center justify-center overflow-hidden">
+        <button id="enter-btn" class="relative z-20 px-8 py-4 border border-[var(--color-2)] text-[var(--color-2)] font-bold tracking-widest hover:bg-[var(--color-2)] hover:text-black transition-all opacity-0">WELCOME!</button>
+        <div id="video-wrapper" class="absolute inset-0 w-full h-full opacity-0 pointer-events-none">
+            <video id="intro-video" src="/video/rickroll.mp4" playsinline class="w-full h-full object-cover"></video>
         </div>
-        <button id="enter-btn">WELCOME!</button>
     </div>
 
     <nav class="fixed top-0 left-0 w-full z-50 px-8 py-6 flex justify-between items-center mix-blend-difference text-white opacity-0">
@@ -43,10 +43,10 @@
     </nav>
 
     <div id="mobile-menu-overlay" class="fixed inset-0 bg-[#050505] z-40 flex flex-col justify-center items-center opacity-0 pointer-events-none">
-        <button onclick="mobileNavClick('#home')" class="text-3xl font-bold mb-10 text-white hover:text-[var(--color-1)] brand-font">01. INTRO</button>
-        <button onclick="mobileNavClick('#works')" class="text-3xl font-bold mb-10 text-white hover:text-[var(--color-1)] brand-font">02. WORKS</button>
-        <button onclick="mobileNavClick('#contact')" class="text-3xl font-bold text-white hover:text-[var(--color-1)] brand-font">03. CONNECT</button>
-    </div>
+    <button onclick="mobileNavClick('#home')" class="text-3xl font-bold mb-10 text-white hover:text-[var(--color-1)] brand-font">01. INTRO</button>
+    <button onclick="mobileNavClick('#works')" class="text-3xl font-bold mb-10 text-white hover:text-[var(--color-1)] brand-font">02. WORKS</button>
+    <button onclick="mobileNavClick('#contact')" class="text-3xl font-bold text-white hover:text-[var(--color-1)] brand-font">03. CONNECT</button>
+</div>
 
     <div id="main-wrapper" class="w-full overflow-x-hidden opacity-0">
         
@@ -180,79 +180,46 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js"></script>
-
     <script>
-        // Đăng ký Plugin
-        gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
-        const video = document.getElementById('intro-video');
         const enterBtn = document.getElementById('enter-btn');
+        const preloadLoader = document.getElementById('preload-loader');
+        const introVideo = document.getElementById('intro-video');
         const videoWrapper = document.getElementById('video-wrapper');
-        const loader = document.getElementById('preload-loader');
-        
-        let isEnterClicked = false;
 
-        // 1. Hiện nút ngay khi HTML load xong (DOMContentLoaded)
-        // Không dùng window.onload vì phải chờ ảnh load xong
-        document.addEventListener("DOMContentLoaded", () => {
-             // Đảm bảo opacity bắt đầu từ 0
-             gsap.set(videoWrapper, {opacity: 0});
-             gsap.set(enterBtn, {opacity: 0});
-
-             gsap.to(videoWrapper, { opacity: 1, duration: 1 });
-             gsap.to(enterBtn, { opacity: 1, duration: 0.5, delay: 0.5 });
+        window.addEventListener("load", () => {
+            gsap.to(enterBtn, { opacity: 1, duration: 0.8, delay: 0.5 });
         });
 
-        // Fallback: Backup an toàn nếu GSAP load chậm hoặc lỗi logic
-        setTimeout(() => {
-            if(!enterBtn.style.opacity || enterBtn.style.opacity == '0') {
-                 enterBtn.style.opacity = '1';
-                 videoWrapper.style.opacity = '1';
-            }
-        }, 2000);
-
-        function enterSite() {
-            if (isEnterClicked) return;
-            isEnterClicked = true;
-
-            gsap.to(enterBtn, { opacity: 0, duration: 0.3 });
-
-            // Cố gắng play video
-            const playPromise = video.play();
-
-            if (playPromise !== undefined) {
-                playPromise.then(_ => {
-                    video.muted = false;
-                    setTimeout(finishPreloader, 4000); // 4 giây cho video chạy
-                }).catch(error => {
-                    console.log("Auto-play prevented, skipping intro");
-                    finishPreloader(); 
-                });
-            } else {
-                finishPreloader();
-            }
-        }
-
-        // Touchstart cho mobile nhạy hơn click
-        enterBtn.addEventListener('click', enterSite);
-        enterBtn.addEventListener('touchstart', enterSite, {passive: true});
-
-        function finishPreloader() {
-             gsap.to(loader, { 
-                  yPercent: -100, 
-                  duration: 1.2, 
-                  ease: "power4.inOut",
-                  onComplete: () => {
-                      loader.style.display = "none";
-                      video.pause(); 
-                      initSite();
-                  }
-              });
-        }
+        enterBtn.addEventListener("click", () => {
+            gsap.to(enterBtn, { opacity: 0, duration: 0.5, pointerEvents: "none" });
+            
+            gsap.to(videoWrapper, { 
+                opacity: 1, 
+                duration: 0.5, 
+                onComplete: () => {
+                    introVideo.volume = 1;
+                    introVideo.play();
+                    
+                    setTimeout(() => {
+                        gsap.to(preloadLoader, {
+                            y: "-100%",
+                            duration: 1.5,
+                            ease: "power4.inOut",
+                            onComplete: () => {
+                                introVideo.pause();
+                                introVideo.currentTime = 0;
+                                preloadLoader.style.display = "none";
+                                initSite();
+                            }
+                        });
+                    }, 4000);
+                }
+            });
+        });
 
         function initSite() {
+            // Hiệu ứng hiện nội dung
             gsap.to("#main-wrapper", { opacity: 1, duration: 0.5 });
             gsap.to("nav", { opacity: 1, duration: 0.5 });
 
@@ -271,24 +238,22 @@
                 ease: "power2.out"
             }, "-=0.5");
 
-            // Scroll Animations for Projects
             const projects = document.querySelectorAll('.project-item');
-            projects.forEach((project) => {
-                gsap.from(project, {
-                    scrollTrigger: {
-                        trigger: project,
-                        start: "top 85%", 
-                        end: "bottom 20%",
-                        toggleActions: "play none none reverse"
-                    },
-                    y: 50,
-                    opacity: 0,
-                    duration: 1,
-                    ease: "power3.out"
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        gsap.to(entry.target, { y: 0, opacity: 1, duration: 1.2, ease: "power3.out" });
+                        observer.unobserve(entry.target);
+                    }
                 });
+            }, { threshold: 0.1 });
+
+            projects.forEach((project) => {
+                gsap.set(project, { y: 100, opacity: 0 });
+                observer.observe(project);
             });
 
-            // Glitch Effect Loop
+            // Glitch Effect
             gsap.to(".glitch-text", {
                 keyframes: [
                     { x: 0, opacity: 1 },
@@ -306,8 +271,9 @@
         }
 
         function initMagneticButtons() {
+            const magnets = document.querySelectorAll('.magnetic-target');
+            // Chỉ chạy trên Desktop để tránh lỗi cảm ứng
             if(window.innerWidth > 1024) {
-                const magnets = document.querySelectorAll('.magnetic-target');
                 magnets.forEach((magnet) => {
                     magnet.addEventListener('mousemove', (e) => {
                         const bounding = magnet.getBoundingClientRect();
@@ -323,39 +289,43 @@
         }
 
         function scrollToSection(id) {
-            gsap.to(window, {duration: 1, scrollTo: {y: id, offsetY: 0}, ease: "power3.inOut"});
+            document.querySelector(id).scrollIntoView({ behavior: 'smooth' });
         }
 
-        // --- MOBILE MENU ---
         let isMobileMenuOpen = false;
         const menuOverlay = document.getElementById('mobile-menu-overlay');
         const menuBtn = document.getElementById('mobile-menu-btn');
 
         function toggleMobileMenu() {
             isMobileMenuOpen = !isMobileMenuOpen;
+
             if (isMobileMenuOpen) {
+                // Mở menu
                 gsap.to(menuOverlay, { opacity: 1, pointerEvents: "auto", duration: 0.5, ease: "power2.out" });
-                menuBtn.textContent = "✕"; 
-                menuBtn.style.color = "var(--color-1)"; 
+                menuBtn.textContent = "✕"; // Đổi icon thành dấu X
+                menuBtn.style.color = "var(--color-1)"; // Đổi màu nút
                 
-                // Animation link menu bay lên
+                // Hiệu ứng xuất hiện các mục menu
                 gsap.fromTo("#mobile-menu-overlay button", 
                     { y: 50, opacity: 0 },
                     { y: 0, opacity: 1, duration: 0.5, stagger: 0.1, delay: 0.2 }
                 );
             } else {
+                // Đóng menu
                 gsap.to(menuOverlay, { opacity: 0, pointerEvents: "none", duration: 0.5, ease: "power2.in" });
-                menuBtn.textContent = "///"; 
+                menuBtn.textContent = "///"; // Trả về icon cũ
                 menuBtn.style.color = "white";
             }
         }
 
         function mobileNavClick(targetId) {
-            toggleMobileMenu(); 
+            toggleMobileMenu(); // Đóng menu trước
             setTimeout(() => {
-                scrollToSection(targetId); 
-            }, 500); 
+                scrollToSection(targetId); // Cuộn đến phần tương ứng
+            }, 500); // Đợi đóng menu xong mới cuộn
         }
     </script>
+
+    
 </body>
 </html>
