@@ -6,8 +6,13 @@
     --color-3: #ccff00;
 }
 
+::-webkit-scrollbar {
+    display: none;
+}
+
 html {
-    scroll-behavior: smooth; /* Thay thế ScrollSmoother */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
 body {
