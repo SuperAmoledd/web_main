@@ -29,14 +29,11 @@ h1, h2, h3, .brand-font {
     text-transform: uppercase;
 }
 
-/* --- MAIN CONTENT --- */
-/* Mặc định opacity 0, sẽ được JS bật lên. Nếu JS lỗi, ít nhất body vẫn có màu nền */
 #main-wrapper, nav {
     opacity: 0;
     transition: opacity 1s ease;
 }
 
-/* --- GLITCH TEXT --- */
 .glitch-text {
     position: relative;
     color: white;
@@ -67,7 +64,6 @@ h1, h2, h3, .brand-font {
     mix-blend-mode: screen;
 }
 
-/* --- CARDS & UI --- */
 .prism-card {
     position: relative;
     overflow: hidden;
