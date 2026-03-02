@@ -972,7 +972,7 @@ var Paint = (function () {
         saveContext.putImageData(imageData, 0, 0);
 
         var link = document.createElement('a');
-        link.download = 'fluid-paint.png';
+        link.download = 'byngv_painted.png';
         link.href = saveCanvas.toDataURL('image/png');
         link.click();
     };
