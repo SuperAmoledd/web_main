@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Flappy Bird</title>
+<title>Flappy Bird - Death Cam</title>
 <style>
     body {
         margin: 0;
@@ -30,7 +30,6 @@
         transition: filter 0.5s; 
     }
 
-    /* Hiệu ứng thị giác khi vào Slow Motion */
     .slow-motion-effect {
         filter: hue-rotate(180deg) contrast(1.2);
     }
@@ -94,7 +93,6 @@
         pointer-events: none;
     }
     
-    /* Status Text hiển thị trạng thái (Sắp slow, đang slow, hồi chiêu) */
     #status-text {
         position: absolute;
         top: 18%;
@@ -173,6 +171,16 @@
         50% { transform: scale(1.1); }
         100% { transform: scale(1); }
     }
+    
+    /* Hiệu ứng nháy đỏ khi chết */
+    .hit-flash {
+        animation: flashRed 0.2s ease-out;
+    }
+    
+    @keyframes flashRed {
+        0% { box-shadow: inset 0 0 0 50px rgba(255,0,0,0.5); }
+        100% { box-shadow: inset 0 0 0 0 rgba(255,0,0,0); }
+    }
 </style>
 </head>
 <body>
@@ -190,7 +198,7 @@
         <div id="start-screen">
             <h1>FLAPPY BIRD</h1>
             <p>Tap / Space to Fly</p>
-            <p style="font-size: 0.8rem; color: #FFD700; margin-top: 5px;">Note: Game dễ cay</p>
+            <p style="font-size: 0.8rem; color: #FFD700; margin-top: 5px;">Cycle: 10 Normal -> 5 Slow -> 10s CD</p>
             <button class="btn" id="start-btn">START</button>
         </div>
         
@@ -230,27 +238,25 @@
     let frames = 0;
     let score = 0;
     let bestScore = 0;
+    // States: START, PLAY, HIT (Dừng hình 1s), VIDEO (Rickroll), OVER (Bảng điểm)
     let currentState = 'START'; 
     let pipeClearTimer = 0; 
     let floatingTexts = [];
     
     // --- SLOW MOTION CYCLE CONFIG ---
-    const PIPES_TO_TRIGGER_SLOW = 10; // Cần qua 10 ống
-    const PIPES_DURATION_SLOW = 5;    // Slow trong 5 ống
-    const COOLDOWN_DURATION = 10000;  // Hồi chiêu 10s
+    const PIPES_TO_TRIGGER_SLOW = 10;
+    const PIPES_DURATION_SLOW = 5;
+    const COOLDOWN_DURATION = 10000;
 
-    // Cycle State: 'CHARGING' (đếm tới 10) -> 'ACTIVE' (đếm tới 5) -> 'COOLDOWN' (đợi 10s)
     let slowMoPhase = 'CHARGING'; 
-    let phasePipeCounter = 0; // Đếm số ống trong phase hiện tại
+    let phasePipeCounter = 0; 
     let cooldownTimerID = null;
     let isSlowMotion = false;
 
-    // Physics (Normal)
+    // Physics
     const BASE_GRAVITY = 0.25;
     const BASE_JUMP = -4.6;
     const BASE_SPEED = 2;
-
-    // Physics (Slow Motion - 0.5x speed)
     const SLOW_GRAVITY = 0.125;
     const SLOW_JUMP = -3.5;
     const SLOW_SPEED = 1;
@@ -274,7 +280,6 @@
             SPEED = BASE_SPEED;
             gameContainer.classList.remove('slow-motion-effect');
             slowMoAlert.style.display = 'none';
-            // Reset dx cho pipes để không bị khựng
             pipes.dx = SPEED;
         }
     }
@@ -302,7 +307,6 @@
                 slowMoPhase = 'CHARGING';
                 phasePipeCounter = 0;
                 updateStatusText();
-                // Hiệu ứng báo hiệu hết cooldown
                 floatingTexts.push({ x: bird.x, y: bird.y - 40, text: "READY!", color: "#FFF", life: 60 });
             }
         }, COOLDOWN_DURATION);
@@ -327,8 +331,6 @@
             if (currentState === 'PLAY') {
                 this.velocity += GRAVITY;
                 this.y += this.velocity;
-                
-                // Rotation logic
                 if (this.velocity < JUMP/2) this.rotation = -25 * Math.PI / 180;
                 else if (this.velocity > 0) {
                     this.rotation += (isSlowMotion ? 1.5 : 3) * Math.PI / 180; 
@@ -337,12 +339,13 @@
                 
                 if (this.y + this.radius >= GAME_HEIGHT - bg.groundHeight) {
                     this.y = GAME_HEIGHT - bg.groundHeight - this.radius;
-                    gameOver(false);
+                    gameOver(false); // Chạm đất
                 }
                 if (this.y - this.radius <= 0) { this.y = this.radius; this.velocity = 0; }
             } else if (currentState === 'START') {
                 this.y = 150 + Math.cos(frames / 10) * 5; 
             }
+            // Ở trạng thái HIT, bird không update vị trí (đứng yên)
         },
         flap() { this.velocity = JUMP; },
         reset() { this.x = 50; this.y = 150; this.velocity = 0; this.rotation = 0; }
@@ -392,10 +395,8 @@
         update() {
             if (currentState !== 'PLAY') return;
             this.dx = SPEED; 
-
             if (pipeClearTimer > 0) { this.items = []; pipeClearTimer--; return; }
             
-            // Logic sinh ống (chậm lại khi slow motion)
             const frameInterval = isSlowMotion ? 200 : 100;
 
             if (frames % frameInterval === 0) {
@@ -414,37 +415,23 @@
                 p.x -= this.dx;
                 if (bird.x + bird.radius > p.x && bird.x - bird.radius < p.x + this.w &&
                     (bird.y - bird.radius < p.top || bird.y + bird.radius > p.bottom)) {
-                    gameOver(false);
+                    gameOver(false); // Chạm ống
                 }
                 
-                // Logic tính điểm và đếm phase
                 if (p.x + this.w < bird.x && !p.passed) {
-                    score++; 
-                    scoreDisplay.innerText = score; 
-                    p.passed = true;
-
-                    // --- CYCLE LOGIC ---
+                    score++; scoreDisplay.innerText = score; p.passed = true;
                     if (slowMoPhase === 'CHARGING') {
-                        phasePipeCounter++;
-                        updateStatusText();
+                        phasePipeCounter++; updateStatusText();
                         if (phasePipeCounter >= PIPES_TO_TRIGGER_SLOW) {
-                            // Kích hoạt Slow Motion
-                            setGameSpeed(true);
-                            slowMoPhase = 'ACTIVE';
-                            phasePipeCounter = 0;
-                            updateStatusText();
+                            setGameSpeed(true); slowMoPhase = 'ACTIVE'; phasePipeCounter = 0; updateStatusText();
                         }
                     } else if (slowMoPhase === 'ACTIVE') {
-                        phasePipeCounter++;
-                        updateStatusText();
+                        phasePipeCounter++; updateStatusText();
                         if (phasePipeCounter >= PIPES_DURATION_SLOW) {
-                            // Hết thời gian Slow Motion -> Vào Cooldown
                             startCooldown();
                         }
                     }
-                    // Nếu đang COOLDOWN thì không làm gì, chỉ đợi timer hết
                 }
-
                 if (p.x + this.w < 0) { this.items.shift(); i--; }
             }
         },
@@ -469,21 +456,13 @@
 
     function openMysteryBox() {
         let rand = Math.random() * 100; 
-        let text = "";
-        let color = "#FFF";
+        let text = ""; let color = "#FFF";
 
-        if (rand < 5) { 
-            gameOver(true); return;
-        } else if (rand < 20) { 
-            score += 50; text = "+50"; color = "#00FF00"; 
-        } else if (rand < 30) { 
-            pipeClearTimer = isSlowMotion ? 600 : 300; 
-            text = "CLEAR!"; color = "#00FFFF"; 
-        } else if (rand < 70) { 
-            score += 10; text = "+10"; color = "#ADFF2F"; 
-        } else {
-            score -= 20; text = "-20"; color = "#FF4500"; 
-        }
+        if (rand < 5) { gameOver(true); return; }
+        else if (rand < 20) { score += 50; text = "+50"; color = "#00FF00"; }
+        else if (rand < 30) { pipeClearTimer = isSlowMotion ? 600 : 300; text = "CLEAR!"; color = "#00FFFF"; }
+        else if (rand < 70) { score += 10; text = "+10"; color = "#ADFF2F"; }
+        else { score -= 20; text = "-20"; color = "#FF4500"; }
 
         scoreDisplay.innerText = score;
         floatingTexts.push({ x: bird.x, y: bird.y - 20, text: text, color: color, life: 60 });
@@ -492,27 +471,36 @@
     function drawFloatingTexts() {
         for (let i = 0; i < floatingTexts.length; i++) {
             let t = floatingTexts[i];
-            ctx.fillStyle = t.color;
-            ctx.font = "bold 24px Courier New";
-            ctx.strokeStyle = "black";
-            ctx.lineWidth = 4;
-            ctx.strokeText(t.text, t.x, t.y);
-            ctx.fillText(t.text, t.x, t.y);
-            
-            t.y -= isSlowMotion ? 0.75 : 1.5; 
-            t.life--;
-            
+            ctx.fillStyle = t.color; ctx.font = "bold 24px Courier New";
+            ctx.strokeStyle = "black"; ctx.lineWidth = 4;
+            ctx.strokeText(t.text, t.x, t.y); ctx.fillText(t.text, t.x, t.y);
+            t.y -= isSlowMotion ? 0.75 : 1.5; t.life--;
             if (t.life <= 0) { floatingTexts.shift(); i--; }
         }
     }
 
+    // --- LOGIC GAMEOVER MỚI (DELAY 1S) ---
     function gameOver(isWin) {
+        if (currentState !== 'PLAY') return;
+
         if (score > bestScore) bestScore = score;
+        
+        // Chuyển sang trạng thái HIT để dừng hình
+        currentState = 'HIT';
+        gameContainer.classList.add('hit-flash'); // Hiệu ứng nháy đỏ nhẹ
+        
+        // Sau 1 giây mới hiện kết quả (Video hoặc Win)
+        setTimeout(() => {
+            triggerEnding(isWin);
+        }, 1000);
+    }
+
+    function triggerEnding(isWin) {
+        gameContainer.classList.remove('hit-flash');
         finalScoreDisplay.innerText = score;
         bestScoreDisplay.innerText = bestScore;
         scoreDisplay.classList.add('hidden');
         setGameSpeed(false); 
-        // Dừng cooldown nếu game over
         if (cooldownTimerID) clearTimeout(cooldownTimerID);
         
         if (isWin) {
@@ -544,7 +532,6 @@
         scoreDisplay.innerText = score; frames = 0; currentState = 'START';
         setGameSpeed(false); 
         
-        // Reset Cycle State
         if (cooldownTimerID) clearTimeout(cooldownTimerID);
         slowMoPhase = 'CHARGING';
         phasePipeCounter = 0;
@@ -559,7 +546,10 @@
     function inputHandler(e) {
         if (e.type === 'keydown' && e.code !== 'Space') return;
         if (e.type === 'keydown' && e.code === 'Space') e.preventDefault();
-        if (currentState === 'VIDEO' || currentState === 'OVER') return;
+        
+        // Chặn input khi đang HIT, VIDEO, OVER
+        if (currentState === 'HIT' || currentState === 'VIDEO' || currentState === 'OVER') return;
+
         if (currentState === 'START' && e.target !== startBtn && e.target !== restartBtn) startGame();
         else if (currentState === 'PLAY') bird.flap();
     }
@@ -576,9 +566,17 @@
 
     function loop() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Dù đang HIT (đứng yên), ta vẫn vẽ để player thấy mình chết ở đâu
+        // Update chỉ chạy khi PLAY hoặc START
         bg.update(); pipes.update(); mysteryBoxes.update(); bird.update();
+        
         pipes.draw(); mysteryBoxes.draw(); bg.draw(); bird.draw(); drawFloatingTexts();
-        frames++; requestAnimationFrame(loop);
+        
+        // Chỉ tăng frames khi game đang chạy (để animation pipe không bị trôi khi HIT)
+        if (currentState === 'PLAY') frames++;
+        
+        requestAnimationFrame(loop);
     }
     loop();
 </script>
