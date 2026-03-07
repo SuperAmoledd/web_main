@@ -3,62 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cờ Caro 25x25 - Big Mode</title>
+    <title>Cờ Caro 25x25 - Full Layout</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --cell-size: 60px; /* Kích thước ô cơ sở */
+        }
+
         body {
             background-color: #0f172a;
             color: #f8fafc;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
             margin: 0;
             font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
-            overflow: hidden;
+            overflow: hidden; /* Chặn cuộn body */
+            touch-action: none; /* Chặn hành động mặc định để xử lý zoom tay */
+            height: 100vh;
+            width: 100vw;
+            position: relative;
+        }
+
+        /* --- UI PANEL (Điểm số & Tiêu đề) --- */
+        /* Mobile: Nằm trên cùng */
+        .ui-panel {
+            position: relative;
+            z-index: 50;
+            width: 100%;
+            padding: 10px;
+            background: #0f172a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        /* PC: Nổi góc trái, trong suốt */
+        @media (min-width: 1024px) {
+            .ui-panel {
+                position: fixed;
+                top: 20px;
+                left: 20px;
+                width: auto;
+                background: rgba(15, 23, 42, 0.85); /* Trong suốt mờ */
+                backdrop-filter: blur(8px);
+                border: 1px solid #334155;
+                border-radius: 12px;
+                padding: 15px 25px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            }
+        }
+
+        /* --- CONTROLS PANEL (Nút bấm) --- */
+        /* Mobile: Nằm dưới cùng */
+        .controls-panel {
+            position: relative;
+            z-index: 50;
+            width: 100%;
+            padding: 10px;
+            background: #0f172a;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        /* PC: Nổi ở dưới giữa */
+        @media (min-width: 1024px) {
+            .controls-panel {
+                position: fixed;
+                bottom: 30px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: auto;
+                background: rgba(15, 23, 42, 0.85);
+                backdrop-filter: blur(8px);
+                border: 1px solid #334155;
+                border-radius: 50px; /* Bo tròn như viên thuốc */
+                padding: 10px 30px;
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            }
         }
 
         /* --- KHUNG CHỨA BÀN CỜ --- */
         .board-wrapper {
             position: relative;
-            width: 95vw;
-            height: 75vh;
             background: #1e293b;
-            border-radius: 8px;
-            border: 2px solid #334155;
-            overflow: auto; /* Cho phép cuộn */
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.6);
+            overflow: auto; /* Scroll nội bộ */
             display: grid;
             place-items: start;
-            -webkit-overflow-scrolling: touch; 
             cursor: grab;
+            -webkit-overflow-scrolling: touch; 
+            touch-action: pan-x pan-y;
+            
+            /* Mobile Default: Boxed Layout */
+            width: 100vw;
+            height: calc(100vh - 130px); /* Trừ đi header/footer mobile */
+            border-top: 1px solid #334155;
+            border-bottom: 1px solid #334155;
         }
 
-        .board-wrapper:active {
-            cursor: grabbing;
+        .board-wrapper:active { cursor: grabbing; }
+
+        /* PC Full Layout Override */
+        @media (min-width: 1024px) {
+            .board-wrapper {
+                position: absolute; /* Tràn màn hình */
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                border: none;
+                z-index: 0; /* Nằm dưới UI */
+            }
         }
 
-        /* --- BÀN CỜ 25x25 (Ô TO 60px) --- */
+        /* --- BÀN CỜ --- */
         .board {
             display: grid;
-            /* Thay đổi: 60px/ô -> Rất to, dễ bấm trên điện thoại */
-            grid-template-columns: repeat(25, 60px); 
-            grid-template-rows: repeat(25, 60px);
+            grid-template-columns: repeat(25, var(--cell-size)); 
+            grid-template-rows: repeat(25, var(--cell-size));
             gap: 2px;
             background-color: #475569;
-            padding: 20px; /* Padding để dễ kéo map ở mép */
+            /* Padding lớn để khi cuộn hết cỡ, nội dung không bị khuất dưới UI */
+            padding: 100px; 
             margin: auto;
+            transform-origin: 0 0;
+        }
+
+        /* Mobile thì padding ít hơn cho đỡ thừa chỗ */
+        @media (max-width: 1023px) {
+            .board { padding: 20px; }
         }
 
         .cell {
             background-color: #0f172a;
-            width: 60px;  /* To gấp rưỡi bản cũ */
-            height: 60px;
+            width: var(--cell-size);
+            height: var(--cell-size);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 32px; /* Chữ to rõ */
+            font-size: calc(var(--cell-size) * 0.55);
             font-weight: bold;
             cursor: pointer;
             user-select: none;
@@ -73,18 +159,16 @@
             width: 100vw;
             height: 100vh;
             object-fit: cover;
-            z-index: 9999;
+            z-index: 9999; /* Cao nhất */
             background: black;
         }
 
         .hidden { display: none !important; }
 
         .cell:hover:empty { background-color: #1e293b; }
-        
         .cell.x { color: #ef4444; text-shadow: 0 0 5px #ef4444; animation: popIn 0.2s; }
         .cell.o { color: #3b82f6; text-shadow: 0 0 5px #3b82f6; animation: popIn 0.2s; }
 
-        /* Đánh dấu nước vừa đi */
         .last-move {
             background-color: #334155 !important;
             box-shadow: inset 0 0 0 3px rgba(255,255,255,0.3);
@@ -102,36 +186,40 @@
             z-index: 10;
         }
 
-        /* Scrollbar đẹp cho PC */
-        .board-wrapper::-webkit-scrollbar { width: 12px; height: 12px; }
-        .board-wrapper::-webkit-scrollbar-track { background: #0f172a; }
-        .board-wrapper::-webkit-scrollbar-thumb { background: #475569; border-radius: 6px; border: 2px solid #0f172a; }
+        /* Scrollbar tùy chỉnh */
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 5px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
     </style>
 </head>
 <body>
 
-    <div class="text-center mb-2 px-2 z-10">
-        <h1 class="text-xl md:text-2xl font-bold uppercase text-slate-200">Cờ Caro 25x25 (Big Size)</h1>
-        <div class="flex flex-col items-center justify-center mt-1">
-            <p id="status" class="text-base md:text-lg text-slate-400 font-medium transition-colors duration-300">Lượt của bạn (X)</p>
-            <span class="text-xs text-slate-500 mt-1 italic">(Kéo màn hình để tìm vị trí đánh)</span>
+    <div class="ui-panel">
+        <div>
+            <h1 class="text-lg md:text-2xl font-bold uppercase text-slate-200 leading-tight">Cờ Caro 25x25</h1>
+            <p id="status" class="text-sm md:text-lg text-slate-400 font-medium transition-colors duration-300 mt-1">Lượt của bạn (X)</p>
         </div>
+        
+        <button id="resetZoomBtn" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded shadow text-xs sm:text-sm flex items-center gap-2 transition">
+            <i class="fa-solid fa-compress"></i> <span>Reset Zoom</span>
+        </button>
     </div>
 
     <div class="board-wrapper" id="boardWrapper">
         <div id="board" class="board"></div>
     </div>
 
-    <video id="intro-video" src="/video/rickroll.mp4" playsinline class="hidden"></video>
-
-    <div class="mt-4 h-12 z-10 flex gap-2">
-        <button id="resetBtn" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded shadow transition hover:scale-105 hidden">
+    <div class="controls-panel">
+        <button id="centerBtn" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white font-medium rounded-full shadow transition flex items-center gap-2">
+            <i class="fa-solid fa-crosshairs"></i> Về giữa
+        </button>
+        <button id="resetBtn" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-full shadow transition hover:scale-105 hidden">
             Chơi ván mới
         </button>
-        <button id="centerBtn" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white font-medium rounded shadow transition">
-            Về giữa bàn
-        </button>
     </div>
+
+    <video id="intro-video" src="/video/rickroll.mp4" playsinline class="hidden"></video>
 
     <script>
         const SIZE = 25; 
@@ -144,10 +232,16 @@
         let gameOver = false;
         let isPlayerTurn = true;
 
+        // Cấu hình Zoom
+        let currentCellSize = 60; // Mặc định 60px
+        const MIN_CELL_SIZE = 20;
+        const MAX_CELL_SIZE = 120;
+
         const boardElement = document.getElementById('board');
         const statusElement = document.getElementById('status');
         const resetBtn = document.getElementById('resetBtn');
         const centerBtn = document.getElementById('centerBtn');
+        const resetZoomBtn = document.getElementById('resetZoomBtn');
         const introVideo = document.getElementById('intro-video');
         const wrapper = document.getElementById('boardWrapper');
 
@@ -157,17 +251,84 @@
             isPlayerTurn = true;
             
             statusElement.innerText = "Lượt của bạn (X)";
-            statusElement.className = "text-base md:text-lg text-slate-400 font-medium";
+            statusElement.className = "text-sm md:text-lg text-slate-400 font-medium";
             
             resetBtn.classList.add('hidden');
             introVideo.classList.add('hidden');
             introVideo.pause();
             introVideo.currentTime = 0;
             
+            // Reset zoom về mặc định
+            updateZoom(60); 
+            
             renderBoard();
             centerMap();
         }
 
+        // --- HÀM XỬ LÝ ZOOM ---
+        function updateZoom(newSize) {
+            if (newSize < MIN_CELL_SIZE) newSize = MIN_CELL_SIZE;
+            if (newSize > MAX_CELL_SIZE) newSize = MAX_CELL_SIZE;
+            currentCellSize = newSize;
+            document.documentElement.style.setProperty('--cell-size', `${currentCellSize}px`);
+        }
+
+        resetZoomBtn.addEventListener('click', () => {
+            boardElement.style.transition = "all 0.3s ease";
+            const oldSize = currentCellSize;
+            updateZoom(60);
+            
+            // Giữ vị trí trung tâm khi reset
+            const ratio = 60 / oldSize;
+            wrapper.scrollLeft = (wrapper.scrollLeft + wrapper.clientWidth/2) * ratio - wrapper.clientWidth/2;
+            wrapper.scrollTop = (wrapper.scrollTop + wrapper.clientHeight/2) * ratio - wrapper.clientHeight/2;
+
+            setTimeout(() => { boardElement.style.transition = "none"; }, 300);
+        });
+
+        // --- XỬ LÝ PINCH ZOOM (Mobile) ---
+        let initialDistance = 0;
+        let initialCellSize = 60;
+
+        wrapper.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 2) {
+                e.preventDefault(); 
+                initialDistance = getDistance(e.touches);
+                initialCellSize = currentCellSize;
+            }
+        }, { passive: false });
+
+        wrapper.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 2) {
+                e.preventDefault();
+                const currentDistance = getDistance(e.touches);
+                if (initialDistance > 0) {
+                    const scale = currentDistance / initialDistance;
+                    const newSize = initialCellSize * scale;
+                    const oldSize = currentCellSize;
+                    updateZoom(newSize);
+                    
+                    // Zoom vào tâm màn hình
+                    if (oldSize > 0) {
+                        const ratio = currentCellSize / oldSize;
+                        const centerX = wrapper.clientWidth / 2;
+                        const centerY = wrapper.clientHeight / 2;
+                        wrapper.scrollLeft = (wrapper.scrollLeft + centerX) * ratio - centerX;
+                        wrapper.scrollTop = (wrapper.scrollTop + centerY) * ratio - centerY;
+                    }
+                }
+            }
+        }, { passive: false });
+
+        wrapper.addEventListener('touchend', (e) => {
+            if (e.touches.length < 2) initialDistance = 0;
+        });
+
+        function getDistance(touches) {
+            return Math.hypot(touches[0].pageX - touches[1].pageX, touches[0].pageY - touches[1].pageY);
+        }
+
+        // --- LOGIC GAME ---
         function centerMap() {
             setTimeout(() => {
                 const scrollX = (wrapper.scrollWidth - wrapper.clientWidth) / 2;
@@ -194,8 +355,8 @@
 
         function updateCell(r, c, player) {
             board[r][c] = player;
-            const index = r * SIZE + c;
-            const cell = boardElement.children[index];
+            const idx = r * SIZE + c;
+            const cell = boardElement.children[idx];
             
             const oldLast = document.querySelector('.last-move');
             if (oldLast) oldLast.classList.remove('last-move');
@@ -211,7 +372,6 @@
         }
 
         function handlePlayerMove(r, c) {
-            // Chặn click nếu game over, chưa tới lượt, hoặc ô đã đánh
             if (gameOver || !isPlayerTurn || board[r][c] !== EMPTY) return;
 
             updateCell(r, c, PLAYER);
@@ -225,26 +385,23 @@
                 return;
             }
 
-            // Chuyển lượt và hiển thị trạng thái suy nghĩ
             isPlayerTurn = false;
             statusElement.innerText = "Máy đang suy nghĩ...";
-            statusElement.classList.add("text-yellow-400"); // Đổi màu chữ cho sinh động
+            statusElement.classList.add("text-yellow-400");
             
-            // DELAY 1 GIÂY (1000ms) để AI trông "thật" hơn
-            setTimeout(makeAIMove, 1000);
+            setTimeout(makeAIMove, 1000); // 1s delay
         }
 
         function makeAIMove() {
             if (gameOver) return;
 
-            // --- Logic AI (Cũ nhưng tốt) ---
             let bestScore = -Infinity;
             let moves = [];
 
             for (let r = 0; r < SIZE; r++) {
                 for (let c = 0; c < SIZE; c++) {
                     if (board[r][c] === EMPTY) {
-                        if (!hasNeighbor(r, c, 2)) continue; // Tối ưu: Chỉ xét ô gần quân cờ khác
+                        if (!hasNeighbor(r, c, 2)) continue; 
 
                         const attackScore = evaluatePosition(r, c, AI);
                         const defenseScore = evaluatePosition(r, c, PLAYER);
@@ -263,9 +420,7 @@
             let move;
             if (moves.length === 0) {
                 const center = Math.floor(SIZE / 2);
-                move = (board[center][center] === EMPTY) 
-                    ? { r: center, c: center } 
-                    : getRandomEmpty();
+                move = (board[center][center] === EMPTY) ? { r: center, c: center } : getRandomEmpty();
             } else {
                 move = moves[Math.floor(Math.random() * moves.length)];
             }
@@ -281,7 +436,6 @@
                 return;
             }
 
-            // Trả lại lượt cho người chơi
             isPlayerTurn = true;
             statusElement.innerText = "Lượt của bạn (X)";
             statusElement.classList.remove("text-yellow-400");
@@ -384,6 +538,7 @@
         // Kéo chuột để cuộn trên PC
         let isDown = false, startX, scrollLeft, startY, scrollTop;
         wrapper.addEventListener('mousedown', (e) => {
+            if(e.button !== 0) return; // Chỉ chuột trái
             isDown = true; wrapper.classList.add('active');
             startX = e.pageX - wrapper.offsetLeft; scrollLeft = wrapper.scrollLeft;
             startY = e.pageY - wrapper.offsetTop; scrollTop = wrapper.scrollTop;
@@ -393,8 +548,8 @@
         wrapper.addEventListener('mousemove', (e) => {
             if (!isDown) return;
             e.preventDefault();
-            wrapper.scrollLeft = scrollLeft - (e.pageX - wrapper.offsetLeft - startX) * 1.5;
-            wrapper.scrollTop = scrollTop - (e.pageY - wrapper.offsetTop - startY) * 1.5;
+            wrapper.scrollLeft = scrollLeft - (e.pageX - wrapper.offsetLeft - startX);
+            wrapper.scrollTop = scrollTop - (e.pageY - wrapper.offsetTop - startY);
         });
 
         init();

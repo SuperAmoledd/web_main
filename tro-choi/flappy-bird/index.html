@@ -12,24 +12,48 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        height: 100vh;
+        height: 100dvh; 
         font-family: 'Courier New', Courier, monospace;
         overflow: hidden;
     }
+    
     #game-container {
         position: relative;
-        width: 100%;
-        max-width: 400px;
-        aspect-ratio: 3 / 4;
         background-color: #70c5ce;
         overflow: hidden;
-        box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        width: 100%;
+        max-width: 400px;
+        aspect-ratio: 9 / 16; 
+        max-height: 90dvh;
+        border-radius: 10px;
+        transition: filter 0.5s; 
     }
+
+    /* Hiệu ứng thị giác khi vào Slow Motion */
+    .slow-motion-effect {
+        filter: hue-rotate(180deg) contrast(1.2);
+    }
+
+    @media (max-width: 768px) {
+        #game-container {
+            width: 100%;
+            height: 100%;
+            max-width: none;
+            max-height: none;
+            border-radius: 0;
+            aspect-ratio: unset;
+            box-shadow: none;
+        }
+    }
+
     canvas {
         display: block;
         width: 100%;
         height: 100%;
+        image-rendering: pixelated; 
     }
+
     #ui-layer {
         position: absolute;
         top: 0;
@@ -42,9 +66,9 @@
         justify-content: center;
         align-items: center;
         text-align: center;
-        z-index: 30; /* UI nằm trên video */
+        z-index: 30;
     }
-    /* Style cho video đè lên canvas nhưng dưới UI Game Over cuối cùng */
+
     #intro-video {
         position: absolute;
         top: 0;
@@ -54,9 +78,11 @@
         object-fit: cover;
         z-index: 20;
     }
+
     .hidden {
         display: none !important;
     }
+
     #score-display {
         position: absolute;
         top: 10%;
@@ -65,15 +91,49 @@
         color: white;
         text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000;
         z-index: 10;
+        pointer-events: none;
     }
+    
+    /* Status Text hiển thị trạng thái (Sắp slow, đang slow, hồi chiêu) */
+    #status-text {
+        position: absolute;
+        top: 18%;
+        font-size: 1rem;
+        font-weight: bold;
+        color: #FFF;
+        text-shadow: 1px 1px 0 #000;
+        z-index: 10;
+        opacity: 0.8;
+    }
+
+    #slow-mo-alert {
+        position: absolute;
+        top: 25%;
+        font-size: 2rem;
+        font-weight: bold;
+        color: #00FFFF;
+        text-shadow: 2px 2px 0 #000;
+        z-index: 10;
+        display: none;
+        animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.1); opacity: 0.8; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
     #start-screen, #game-over-screen {
-        background: rgba(0, 0, 0, 0.3);
+        background: rgba(0, 0, 0, 0.6);
         padding: 20px;
         border-radius: 10px;
         pointer-events: auto;
         color: white;
         text-shadow: 2px 2px 0 #000;
+        min-width: 200px;
     }
+
     #game-over-screen {
         background: #ded895;
         border: 2px solid #543847;
@@ -81,6 +141,7 @@
         text-shadow: none;
         box-shadow: inset 0 0 0 3px #fff;
     }
+
     .btn {
         margin-top: 20px;
         padding: 10px 20px;
@@ -92,10 +153,25 @@
         cursor: pointer;
         text-shadow: 1px 1px 0 #000;
         box-shadow: 0 4px 0 #000;
+        touch-action: manipulation;
     }
+
     .btn:active {
         transform: translateY(4px);
         box-shadow: 0 0 0 #000;
+    }
+
+    .win-text {
+        color: #FFD700 !important;
+        text-shadow: 2px 2px 0 #FF4500 !important;
+        animation: blink 0.5s infinite;
+        font-size: 2.5rem;
+    }
+    
+    @keyframes blink {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
     }
 </style>
 </head>
@@ -107,16 +183,19 @@
     <video id="intro-video" src="/video/rickroll.mp4" playsinline class="hidden"></video>
 
     <div id="score-display">0</div>
+    <div id="status-text">Next Slow: 10 pipes</div>
+    <div id="slow-mo-alert">MATRIX MODE!</div>
     
     <div id="ui-layer">
         <div id="start-screen">
             <h1>FLAPPY BIRD</h1>
-            <p>Click / Tap / Space to Fly</p>
+            <p>Tap / Space to Fly</p>
+            <p style="font-size: 0.8rem; color: #FFD700; margin-top: 5px;">Note: Game dễ cay</p>
             <button class="btn" id="start-btn">START</button>
         </div>
         
         <div id="game-over-screen" class="hidden">
-            <h2>GAME OVER</h2>
+            <h2 id="end-title">GAME OVER</h2>
             <p>Score: <span id="final-score">0</span></p>
             <p>Best: <span id="best-score">0</span></p>
             <button class="btn" id="restart-btn">PLAY AGAIN</button>
@@ -127,16 +206,18 @@
 <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
+    const gameContainer = document.getElementById('game-container');
     
     const uiStart = document.getElementById('start-screen');
     const uiGameOver = document.getElementById('game-over-screen');
+    const endTitle = document.getElementById('end-title');
     const scoreDisplay = document.getElementById('score-display');
+    const statusText = document.getElementById('status-text');
+    const slowMoAlert = document.getElementById('slow-mo-alert');
     const finalScoreDisplay = document.getElementById('final-score');
     const bestScoreDisplay = document.getElementById('best-score');
     const startBtn = document.getElementById('start-btn');
     const restartBtn = document.getElementById('restart-btn');
-    
-    // Video Element Reference
     const introVideo = document.getElementById('intro-video');
 
     // Game constants
@@ -145,300 +226,344 @@
     canvas.width = GAME_WIDTH;
     canvas.height = GAME_HEIGHT;
 
-    // State
+    // --- GAME LOGIC VARIABLES ---
     let frames = 0;
     let score = 0;
     let bestScore = 0;
-    let currentState = 'START'; // START, PLAY, VIDEO, OVER
+    let currentState = 'START'; 
+    let pipeClearTimer = 0; 
+    let floatingTexts = [];
+    
+    // --- SLOW MOTION CYCLE CONFIG ---
+    const PIPES_TO_TRIGGER_SLOW = 10; // Cần qua 10 ống
+    const PIPES_DURATION_SLOW = 5;    // Slow trong 5 ống
+    const COOLDOWN_DURATION = 10000;  // Hồi chiêu 10s
 
-    // Physics
-    const GRAVITY = 0.25;
-    const JUMP = -4.6;
-    const SPEED = 2;
+    // Cycle State: 'CHARGING' (đếm tới 10) -> 'ACTIVE' (đếm tới 5) -> 'COOLDOWN' (đợi 10s)
+    let slowMoPhase = 'CHARGING'; 
+    let phasePipeCounter = 0; // Đếm số ống trong phase hiện tại
+    let cooldownTimerID = null;
+    let isSlowMotion = false;
+
+    // Physics (Normal)
+    const BASE_GRAVITY = 0.25;
+    const BASE_JUMP = -4.6;
+    const BASE_SPEED = 2;
+
+    // Physics (Slow Motion - 0.5x speed)
+    const SLOW_GRAVITY = 0.125;
+    const SLOW_JUMP = -3.5;
+    const SLOW_SPEED = 1;
+
+    let GRAVITY = BASE_GRAVITY;
+    let JUMP = BASE_JUMP;
+    let SPEED = BASE_SPEED;
+
+    function setGameSpeed(slow) {
+        if (slow) {
+            isSlowMotion = true;
+            GRAVITY = SLOW_GRAVITY;
+            JUMP = SLOW_JUMP;
+            SPEED = SLOW_SPEED;
+            gameContainer.classList.add('slow-motion-effect');
+            slowMoAlert.style.display = 'block';
+        } else {
+            isSlowMotion = false;
+            GRAVITY = BASE_GRAVITY;
+            JUMP = BASE_JUMP;
+            SPEED = BASE_SPEED;
+            gameContainer.classList.remove('slow-motion-effect');
+            slowMoAlert.style.display = 'none';
+            // Reset dx cho pipes để không bị khựng
+            pipes.dx = SPEED;
+        }
+    }
+
+    function updateStatusText() {
+        if (slowMoPhase === 'CHARGING') {
+            statusText.innerText = `Next Slow: ${PIPES_TO_TRIGGER_SLOW - phasePipeCounter} pipes`;
+            statusText.style.color = '#FFF';
+        } else if (slowMoPhase === 'ACTIVE') {
+            statusText.innerText = `Slow Ending in: ${PIPES_DURATION_SLOW - phasePipeCounter} pipes`;
+            statusText.style.color = '#00FFFF';
+        } else if (slowMoPhase === 'COOLDOWN') {
+            statusText.innerText = "Cooldown...";
+            statusText.style.color = '#FFA500';
+        }
+    }
+
+    function startCooldown() {
+        setGameSpeed(false);
+        slowMoPhase = 'COOLDOWN';
+        updateStatusText();
+
+        cooldownTimerID = setTimeout(() => {
+            if (currentState === 'PLAY') {
+                slowMoPhase = 'CHARGING';
+                phasePipeCounter = 0;
+                updateStatusText();
+                // Hiệu ứng báo hiệu hết cooldown
+                floatingTexts.push({ x: bird.x, y: bird.y - 40, text: "READY!", color: "#FFF", life: 60 });
+            }
+        }, COOLDOWN_DURATION);
+    }
 
     const bird = {
-        x: 50,
-        y: 150,
-        w: 34,
-        h: 24,
-        radius: 12,
-        velocity: 0,
-        rotation: 0,
+        x: 50, y: 150, w: 34, h: 24, radius: 12, velocity: 0, rotation: 0,
         
         draw() {
             ctx.save();
             ctx.translate(this.x, this.y);
             ctx.rotate(this.rotation);
-            
-            // Body
-            ctx.fillStyle = '#f3c300';
-            ctx.beginPath();
-            ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = '#000';
-            ctx.stroke();
-            
-            // Wing
-            ctx.fillStyle = '#fff';
-            ctx.beginPath();
-            ctx.ellipse(-4, 2, 6, 4, 0, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.stroke();
-
-            // Eye
-            ctx.fillStyle = '#fff';
-            ctx.beginPath();
-            ctx.arc(6, -6, 4, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.stroke();
-            
-            // Pupil
-            ctx.fillStyle = '#000';
-            ctx.beginPath();
-            ctx.arc(8, -6, 1.5, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Beak
-            ctx.fillStyle = '#e86101';
-            ctx.beginPath();
-            ctx.rect(8, -1, 10, 6);
-            ctx.fill();
-            ctx.stroke();
-
+            ctx.fillStyle = '#f3c300'; ctx.beginPath(); ctx.arc(0, 0, this.radius, 0, Math.PI * 2); ctx.fill();
+            ctx.lineWidth = 2; ctx.strokeStyle = '#000'; ctx.stroke();
+            ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(-4, 2, 6, 4, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+            ctx.beginPath(); ctx.arc(6, -6, 4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+            ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(8, -6, 1.5, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#e86101'; ctx.beginPath(); ctx.rect(8, -1, 10, 6); ctx.fill(); ctx.stroke();
             ctx.restore();
         },
-        
         update() {
             if (currentState === 'PLAY') {
                 this.velocity += GRAVITY;
                 this.y += this.velocity;
                 
-                if (this.velocity < JUMP) {
-                    this.rotation = -25 * Math.PI / 180;
-                } else if (this.velocity > 0) {
-                    this.rotation += 3 * Math.PI / 180;
-                    if (this.rotation > 90 * Math.PI / 180) {
-                        this.rotation = 90 * Math.PI / 180;
-                    }
+                // Rotation logic
+                if (this.velocity < JUMP/2) this.rotation = -25 * Math.PI / 180;
+                else if (this.velocity > 0) {
+                    this.rotation += (isSlowMotion ? 1.5 : 3) * Math.PI / 180; 
+                    if (this.rotation > 90 * Math.PI / 180) this.rotation = 90 * Math.PI / 180;
                 }
+                
+                if (this.y + this.radius >= GAME_HEIGHT - bg.groundHeight) {
+                    this.y = GAME_HEIGHT - bg.groundHeight - this.radius;
+                    gameOver(false);
+                }
+                if (this.y - this.radius <= 0) { this.y = this.radius; this.velocity = 0; }
             } else if (currentState === 'START') {
                 this.y = 150 + Math.cos(frames / 10) * 5; 
             }
-            
-            // Floor collision
-            if (currentState === 'PLAY') {
-                if (this.y + this.radius >= GAME_HEIGHT - bg.groundHeight) {
-                    this.y = GAME_HEIGHT - bg.groundHeight - this.radius;
-                    gameOver();
-                }
-                
-                // Ceiling collision
-                if (this.y - this.radius <= 0) {
-                    this.y = this.radius;
-                    this.velocity = 0;
-                }
+        },
+        flap() { this.velocity = JUMP; },
+        reset() { this.x = 50; this.y = 150; this.velocity = 0; this.rotation = 0; }
+    };
+
+    const mysteryBoxes = {
+        items: [], w: 30, h: 30,
+        draw() {
+            for (let i = 0; i < this.items.length; i++) {
+                let b = this.items[i];
+                if (b.collected) continue;
+                ctx.fillStyle = '#FFD700'; 
+                ctx.fillRect(b.x, b.y, this.w, this.h);
+                ctx.lineWidth = 2; ctx.strokeStyle = '#DAA520'; ctx.strokeRect(b.x, b.y, this.w, this.h);
+                ctx.fillStyle = '#FFF'; ctx.font = 'bold 20px Courier New'; ctx.fillText('?', b.x + 8, b.y + 22);
             }
         },
-        
-        flap() {
-            this.velocity = JUMP;
+        update() {
+            if (currentState !== 'PLAY') return;
+            for (let i = 0; i < this.items.length; i++) {
+                let b = this.items[i];
+                b.x -= SPEED;
+                if (!b.collected && bird.x + bird.radius > b.x && bird.x - bird.radius < b.x + this.w &&
+                    bird.y + bird.radius > b.y && bird.y - bird.radius < b.y + this.h) {
+                    b.collected = true;
+                    openMysteryBox();
+                }
+                if (b.x + this.w < 0) { this.items.shift(); i--; }
+            }
         },
-        
-        reset() {
-            this.x = 50;
-            this.y = 150;
-            this.velocity = 0;
-            this.rotation = 0;
-        }
+        reset() { this.items = []; }
     };
 
     const pipes = {
-        items: [],
-        w: 52,
-        gap: 120,
-        dx: SPEED,
-        
+        items: [], w: 52, gap: 120, dx: SPEED,
         draw() {
             for (let i = 0; i < this.items.length; i++) {
                 let p = this.items[i];
-                
-                // Draw Top Pipe
-                ctx.fillStyle = '#73bf2e';
-                ctx.fillRect(p.x, 0, this.w, p.top);
-                ctx.lineWidth = 2;
-                ctx.strokeStyle = '#543847';
-                ctx.strokeRect(p.x, 0, this.w, p.top);
-                
-                // Top Cap
-                ctx.fillRect(p.x - 2, p.top - 20, this.w + 4, 20);
-                ctx.strokeRect(p.x - 2, p.top - 20, this.w + 4, 20);
-                
-                // Draw Bottom Pipe
+                ctx.fillStyle = '#73bf2e'; ctx.fillRect(p.x, 0, this.w, p.top);
+                ctx.lineWidth = 2; ctx.strokeStyle = '#543847'; ctx.strokeRect(p.x, 0, this.w, p.top);
+                ctx.fillRect(p.x - 2, p.top - 20, this.w + 4, 20); ctx.strokeRect(p.x - 2, p.top - 20, this.w + 4, 20);
                 ctx.fillRect(p.x, p.bottom, this.w, GAME_HEIGHT - p.bottom - bg.groundHeight);
                 ctx.strokeRect(p.x, p.bottom, this.w, GAME_HEIGHT - p.bottom - bg.groundHeight);
-                
-                // Bottom Cap
-                ctx.fillRect(p.x - 2, p.bottom, this.w + 4, 20);
-                ctx.strokeRect(p.x - 2, p.bottom, this.w + 4, 20);
+                ctx.fillRect(p.x - 2, p.bottom, this.w + 4, 20); ctx.strokeRect(p.x - 2, p.bottom, this.w + 4, 20);
             }
         },
-        
         update() {
             if (currentState !== 'PLAY') return;
+            this.dx = SPEED; 
 
-            // Add new pipe
-            if (frames % 100 === 0) {
+            if (pipeClearTimer > 0) { this.items = []; pipeClearTimer--; return; }
+            
+            // Logic sinh ống (chậm lại khi slow motion)
+            const frameInterval = isSlowMotion ? 200 : 100;
+
+            if (frames % frameInterval === 0) {
                 let minTop = 50;
                 let maxTop = GAME_HEIGHT - bg.groundHeight - this.gap - 50;
                 let topH = Math.floor(Math.random() * (maxTop - minTop + 1) + minTop);
+                this.items.push({ x: GAME_WIDTH, top: topH, bottom: topH + this.gap, passed: false });
                 
-                this.items.push({
-                    x: GAME_WIDTH,
-                    top: topH,
-                    bottom: topH + this.gap,
-                    passed: false
-                });
+                if (Math.random() < 0.3) {
+                    mysteryBoxes.items.push({ x: GAME_WIDTH + 10, y: topH + (this.gap - mysteryBoxes.h) / 2, collected: false });
+                }
             }
-
+            
             for (let i = 0; i < this.items.length; i++) {
                 let p = this.items[i];
                 p.x -= this.dx;
-
-                // Collision detection
                 if (bird.x + bird.radius > p.x && bird.x - bird.radius < p.x + this.w &&
                     (bird.y - bird.radius < p.top || bird.y + bird.radius > p.bottom)) {
-                    gameOver();
+                    gameOver(false);
                 }
-
-                // Update score
+                
+                // Logic tính điểm và đếm phase
                 if (p.x + this.w < bird.x && !p.passed) {
-                    score++;
-                    scoreDisplay.innerText = score;
+                    score++; 
+                    scoreDisplay.innerText = score; 
                     p.passed = true;
+
+                    // --- CYCLE LOGIC ---
+                    if (slowMoPhase === 'CHARGING') {
+                        phasePipeCounter++;
+                        updateStatusText();
+                        if (phasePipeCounter >= PIPES_TO_TRIGGER_SLOW) {
+                            // Kích hoạt Slow Motion
+                            setGameSpeed(true);
+                            slowMoPhase = 'ACTIVE';
+                            phasePipeCounter = 0;
+                            updateStatusText();
+                        }
+                    } else if (slowMoPhase === 'ACTIVE') {
+                        phasePipeCounter++;
+                        updateStatusText();
+                        if (phasePipeCounter >= PIPES_DURATION_SLOW) {
+                            // Hết thời gian Slow Motion -> Vào Cooldown
+                            startCooldown();
+                        }
+                    }
+                    // Nếu đang COOLDOWN thì không làm gì, chỉ đợi timer hết
                 }
 
-                // Remove off-screen pipes
-                if (p.x + this.w < 0) {
-                    this.items.shift();
-                    i--;
-                }
+                if (p.x + this.w < 0) { this.items.shift(); i--; }
             }
         },
-        
-        reset() {
-            this.items = [];
-        }
+        reset() { this.items = []; }
     };
 
     const bg = {
-        groundHeight: 112,
-        groundX: 0,
-        
+        groundHeight: 112, groundX: 0,
         draw() {
-            // Sky
-            ctx.fillStyle = '#ded895';
-            ctx.fillRect(0, GAME_HEIGHT - this.groundHeight, GAME_WIDTH, this.groundHeight);
-            
-            // Grass line
-            ctx.fillStyle = '#73bf2e';
-            ctx.fillRect(0, GAME_HEIGHT - this.groundHeight, GAME_WIDTH, 12);
-            
-            // Border
-            ctx.beginPath();
-            ctx.moveTo(0, GAME_HEIGHT - this.groundHeight);
-            ctx.lineTo(GAME_WIDTH, GAME_HEIGHT - this.groundHeight);
-            ctx.lineWidth = 4;
-            ctx.strokeStyle = '#543847';
-            ctx.stroke();
-
-            // Ground stripes
-            ctx.strokeStyle = '#c4bb6b';
-            ctx.lineWidth = 2;
+            ctx.fillStyle = '#ded895'; ctx.fillRect(0, GAME_HEIGHT - this.groundHeight, GAME_WIDTH, this.groundHeight);
+            ctx.fillStyle = '#73bf2e'; ctx.fillRect(0, GAME_HEIGHT - this.groundHeight, GAME_WIDTH, 12);
+            ctx.beginPath(); ctx.moveTo(0, GAME_HEIGHT - this.groundHeight); ctx.lineTo(GAME_WIDTH, GAME_HEIGHT - this.groundHeight);
+            ctx.lineWidth = 4; ctx.strokeStyle = '#543847'; ctx.stroke();
+            ctx.strokeStyle = '#c4bb6b'; ctx.lineWidth = 2;
             for(let i = 0; i < GAME_WIDTH + 20; i+= 20) {
-                ctx.beginPath();
-                ctx.moveTo(i + this.groundX, GAME_HEIGHT - this.groundHeight + 12);
-                ctx.lineTo(i - 20 + this.groundX, GAME_HEIGHT);
-                ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(i + this.groundX, GAME_HEIGHT - this.groundHeight + 12);
+                ctx.lineTo(i - 20 + this.groundX, GAME_HEIGHT); ctx.stroke();
             }
         },
-        
-        update() {
-            if (currentState === 'PLAY' || currentState === 'START') {
-                this.groundX = (this.groundX - SPEED) % 20;
-            }
-        }
+        update() { if (currentState === 'PLAY' || currentState === 'START') this.groundX = (this.groundX - SPEED) % 20; }
     };
 
-    function gameOver() {
-        currentState = 'VIDEO'; // Chuyển sang trạng thái video
-        
-        if (score > bestScore) {
-            bestScore = score;
+    function openMysteryBox() {
+        let rand = Math.random() * 100; 
+        let text = "";
+        let color = "#FFF";
+
+        if (rand < 5) { 
+            gameOver(true); return;
+        } else if (rand < 20) { 
+            score += 50; text = "+50"; color = "#00FF00"; 
+        } else if (rand < 30) { 
+            pipeClearTimer = isSlowMotion ? 600 : 300; 
+            text = "CLEAR!"; color = "#00FFFF"; 
+        } else if (rand < 70) { 
+            score += 10; text = "+10"; color = "#ADFF2F"; 
+        } else {
+            score -= 20; text = "-20"; color = "#FF4500"; 
         }
-        finalScoreDisplay.innerText = score;
-        bestScoreDisplay.innerText = bestScore;
-        
-        scoreDisplay.classList.add('hidden'); // Ẩn điểm số khi chạy video
-        
-        // Hiển thị và chạy video
-        introVideo.classList.remove('hidden');
-        introVideo.currentTime = 0;
-        introVideo.play().catch(e => {
-            console.log("Auto-play prevented, showing game over immediately");
-            showGameOverScreen();
-        });
+
+        scoreDisplay.innerText = score;
+        floatingTexts.push({ x: bird.x, y: bird.y - 20, text: text, color: color, life: 60 });
     }
 
-    // Hàm riêng để hiện bảng kết quả sau khi video hết
+    function drawFloatingTexts() {
+        for (let i = 0; i < floatingTexts.length; i++) {
+            let t = floatingTexts[i];
+            ctx.fillStyle = t.color;
+            ctx.font = "bold 24px Courier New";
+            ctx.strokeStyle = "black";
+            ctx.lineWidth = 4;
+            ctx.strokeText(t.text, t.x, t.y);
+            ctx.fillText(t.text, t.x, t.y);
+            
+            t.y -= isSlowMotion ? 0.75 : 1.5; 
+            t.life--;
+            
+            if (t.life <= 0) { floatingTexts.shift(); i--; }
+        }
+    }
+
+    function gameOver(isWin) {
+        if (score > bestScore) bestScore = score;
+        finalScoreDisplay.innerText = score;
+        bestScoreDisplay.innerText = bestScore;
+        scoreDisplay.classList.add('hidden');
+        setGameSpeed(false); 
+        // Dừng cooldown nếu game over
+        if (cooldownTimerID) clearTimeout(cooldownTimerID);
+        
+        if (isWin) {
+            currentState = 'OVER';
+            endTitle.innerText = "YOU WIN!";
+            endTitle.classList.add('win-text');
+            uiGameOver.classList.remove('hidden');
+        } else {
+            currentState = 'VIDEO';
+            endTitle.innerText = "GAME OVER";
+            endTitle.classList.remove('win-text');
+            introVideo.classList.remove('hidden');
+            introVideo.currentTime = 0;
+            introVideo.play().catch(e => showGameOverScreen());
+        }
+    }
+
     function showGameOverScreen() {
         currentState = 'OVER';
         introVideo.classList.add('hidden');
         introVideo.pause();
         uiGameOver.classList.remove('hidden');
     }
-
-    // Lắng nghe sự kiện video kết thúc
     introVideo.addEventListener('ended', showGameOverScreen);
 
     function resetGame() {
-        bird.reset();
-        pipes.reset();
-        score = 0;
-        scoreDisplay.innerText = score;
-        frames = 0;
-        currentState = 'START';
+        bird.reset(); pipes.reset(); mysteryBoxes.reset();
+        floatingTexts = []; score = 0; pipeClearTimer = 0; 
+        scoreDisplay.innerText = score; frames = 0; currentState = 'START';
+        setGameSpeed(false); 
         
-        uiStart.classList.remove('hidden');
-        uiGameOver.classList.add('hidden');
-        scoreDisplay.classList.remove('hidden');
-        introVideo.classList.add('hidden'); // Đảm bảo video ẩn khi reset
+        // Reset Cycle State
+        if (cooldownTimerID) clearTimeout(cooldownTimerID);
+        slowMoPhase = 'CHARGING';
+        phasePipeCounter = 0;
+        updateStatusText();
+        
+        uiStart.classList.remove('hidden'); uiGameOver.classList.add('hidden');
+        scoreDisplay.classList.remove('hidden'); introVideo.classList.add('hidden');
     }
 
-    function startGame() {
-        currentState = 'PLAY';
-        uiStart.classList.add('hidden');
-        bird.flap();
-    }
+    function startGame() { currentState = 'PLAY'; uiStart.classList.add('hidden'); bird.flap(); }
 
     function inputHandler(e) {
         if (e.type === 'keydown' && e.code !== 'Space') return;
         if (e.type === 'keydown' && e.code === 'Space') e.preventDefault();
-        
-        // Không làm gì nếu đang chiếu video hoặc game over
-        if (currentState === 'VIDEO' || currentState === 'OVER') {
-            // Chặn input
-            return;
-        }
-
-        if (currentState === 'START' && e.target !== startBtn && e.target !== restartBtn) {
-            startGame();
-        } else if (currentState === 'PLAY') {
-            bird.flap();
-        }
+        if (currentState === 'VIDEO' || currentState === 'OVER') return;
+        if (currentState === 'START' && e.target !== startBtn && e.target !== restartBtn) startGame();
+        else if (currentState === 'PLAY') bird.flap();
     }
 
-    // Event Listeners
     window.addEventListener('keydown', inputHandler);
     document.getElementById('game-container').addEventListener('mousedown', inputHandler);
     document.getElementById('game-container').addEventListener('touchstart', (e) => {
@@ -446,36 +571,16 @@
         inputHandler(e);
     }, {passive: false});
 
-    startBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        startGame();
-    });
+    startBtn.addEventListener('click', (e) => { e.stopPropagation(); startGame(); });
+    restartBtn.addEventListener('click', (e) => { e.stopPropagation(); resetGame(); startGame(); });
 
-    restartBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        resetGame();
-        startGame();
-    });
-
-    // Game Loop
     function loop() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // Vẫn vẽ background và pipes/bird để làm nền phía sau video (nếu video trong suốt/load chậm)
-        bg.update();
-        pipes.update();
-        bird.update();
-        
-        pipes.draw();
-        bg.draw();
-        bird.draw();
-        
-        frames++;
-        requestAnimationFrame(loop);
+        bg.update(); pipes.update(); mysteryBoxes.update(); bird.update();
+        pipes.draw(); mysteryBoxes.draw(); bg.draw(); bird.draw(); drawFloatingTexts();
+        frames++; requestAnimationFrame(loop);
     }
-
     loop();
 </script>
-
 </body>
 </html>
