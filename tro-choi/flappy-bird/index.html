@@ -42,6 +42,17 @@
         justify-content: center;
         align-items: center;
         text-align: center;
+        z-index: 30; /* UI nằm trên video */
+    }
+    /* Style cho video đè lên canvas nhưng dưới UI Game Over cuối cùng */
+    #intro-video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: 20;
     }
     .hidden {
         display: none !important;
@@ -92,6 +103,9 @@
 
 <div id="game-container">
     <canvas id="gameCanvas"></canvas>
+    
+    <video id="intro-video" src="/video/rickroll.mp4" playsinline class="hidden"></video>
+
     <div id="score-display">0</div>
     
     <div id="ui-layer">
@@ -121,6 +135,9 @@
     const bestScoreDisplay = document.getElementById('best-score');
     const startBtn = document.getElementById('start-btn');
     const restartBtn = document.getElementById('restart-btn');
+    
+    // Video Element Reference
+    const introVideo = document.getElementById('intro-video');
 
     // Game constants
     const GAME_WIDTH = 288;
@@ -132,7 +149,7 @@
     let frames = 0;
     let score = 0;
     let bestScore = 0;
-    let currentState = 'START'; // START, PLAY, OVER
+    let currentState = 'START'; // START, PLAY, VIDEO, OVER
 
     // Physics
     const GRAVITY = 0.25;
@@ -210,15 +227,17 @@
             }
             
             // Floor collision
-            if (this.y + this.radius >= GAME_HEIGHT - bg.groundHeight) {
-                this.y = GAME_HEIGHT - bg.groundHeight - this.radius;
-                gameOver();
-            }
-            
-            // Ceiling collision
-            if (this.y - this.radius <= 0) {
-                this.y = this.radius;
-                this.velocity = 0;
+            if (currentState === 'PLAY') {
+                if (this.y + this.radius >= GAME_HEIGHT - bg.groundHeight) {
+                    this.y = GAME_HEIGHT - bg.groundHeight - this.radius;
+                    gameOver();
+                }
+                
+                // Ceiling collision
+                if (this.y - this.radius <= 0) {
+                    this.y = this.radius;
+                    this.velocity = 0;
+                }
             }
         },
         
@@ -317,9 +336,7 @@
         groundX: 0,
         
         draw() {
-            // Sky is handled by canvas background, draw clouds/city here if needed
-            
-            // Ground
+            // Sky
             ctx.fillStyle = '#ded895';
             ctx.fillRect(0, GAME_HEIGHT - this.groundHeight, GAME_WIDTH, this.groundHeight);
             
@@ -354,15 +371,35 @@
     };
 
     function gameOver() {
-        currentState = 'OVER';
+        currentState = 'VIDEO'; // Chuyển sang trạng thái video
+        
         if (score > bestScore) {
             bestScore = score;
         }
         finalScoreDisplay.innerText = score;
         bestScoreDisplay.innerText = bestScore;
-        uiGameOver.classList.remove('hidden');
-        scoreDisplay.classList.add('hidden');
+        
+        scoreDisplay.classList.add('hidden'); // Ẩn điểm số khi chạy video
+        
+        // Hiển thị và chạy video
+        introVideo.classList.remove('hidden');
+        introVideo.currentTime = 0;
+        introVideo.play().catch(e => {
+            console.log("Auto-play prevented, showing game over immediately");
+            showGameOverScreen();
+        });
     }
+
+    // Hàm riêng để hiện bảng kết quả sau khi video hết
+    function showGameOverScreen() {
+        currentState = 'OVER';
+        introVideo.classList.add('hidden');
+        introVideo.pause();
+        uiGameOver.classList.remove('hidden');
+    }
+
+    // Lắng nghe sự kiện video kết thúc
+    introVideo.addEventListener('ended', showGameOverScreen);
 
     function resetGame() {
         bird.reset();
@@ -371,9 +408,11 @@
         scoreDisplay.innerText = score;
         frames = 0;
         currentState = 'START';
+        
         uiStart.classList.remove('hidden');
         uiGameOver.classList.add('hidden');
         scoreDisplay.classList.remove('hidden');
+        introVideo.classList.add('hidden'); // Đảm bảo video ẩn khi reset
     }
 
     function startGame() {
@@ -386,6 +425,12 @@
         if (e.type === 'keydown' && e.code !== 'Space') return;
         if (e.type === 'keydown' && e.code === 'Space') e.preventDefault();
         
+        // Không làm gì nếu đang chiếu video hoặc game over
+        if (currentState === 'VIDEO' || currentState === 'OVER') {
+            // Chặn input
+            return;
+        }
+
         if (currentState === 'START' && e.target !== startBtn && e.target !== restartBtn) {
             startGame();
         } else if (currentState === 'PLAY') {
@@ -416,6 +461,7 @@
     function loop() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
+        // Vẫn vẽ background và pipes/bird để làm nền phía sau video (nếu video trong suốt/load chậm)
         bg.update();
         pipes.update();
         bird.update();
