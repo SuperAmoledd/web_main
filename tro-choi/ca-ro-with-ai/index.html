@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cờ Caro 10x10 - AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(10, 40px);
+            grid-template-rows: repeat(10, 40px);
+            gap: 2px;
+            background-color: #334155;
+            padding: 4px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        @media (min-width: 640px) {
+            .board {
+                grid-template-columns: repeat(10, 50px);
+                grid-template-rows: repeat(10, 50px);
+            }
+        }
+
+        .cell {
+            background-color: #1e293b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border-radius: 4px;
+        }
+
+        @media (min-width: 640px) {
+            .cell {
+                font-size: 32px;
+            }
+        }
+
+        .cell:hover:empty {
+            background-color: #334155;
+        }
+
+        .cell.x {
+            color: #ef4444;
+            text-shadow: 0 0 10px #ef4444, 0 0 20px #dc2626;
+            animation: explodeX 0.4s ease-out forwards;
+        }
+
+        .cell.o {
+            color: #3b82f6;
+            text-shadow: 0 0 10px #3b82f6, 0 0 20px #2563eb;
+            animation: explodeO 0.4s ease-out forwards;
+        }
+
+        @keyframes explodeX {
+            0% { transform: scale(2.5); opacity: 0; text-shadow: 0 0 50px #ef4444, 0 0 100px #f97316; }
+            50% { transform: scale(0.8); opacity: 1; text-shadow: 0 0 20px #ef4444; }
+            100% { transform: scale(1); text-shadow: 0 0 8px #ef4444; }
+        }
+
+        @keyframes explodeO {
+            0% { transform: scale(2.5); opacity: 0; text-shadow: 0 0 50px #3b82f6, 0 0 100px #06b6d4; }
+            50% { transform: scale(0.8); opacity: 1; text-shadow: 0 0 20px #3b82f6; }
+            100% { transform: scale(1); text-shadow: 0 0 8px #3b82f6; }
+        }
+
+        .win-line {
+            background-color: #fbbf24 !important;
+            color: #000 !important;
+            text-shadow: none !important;
+            animation: pulseWin 1s infinite alternate;
+        }
+
+        @keyframes pulseWin {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.7); }
+            100% { transform: scale(1.05); box-shadow: 0 0 15px 5px rgba(251, 191, 36, 0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="mb-6 text-center">
+        <h1 class="text-3xl font-bold mb-2 uppercase tracking-wider text-slate-200">Cờ Caro 10x10</h1>
+        <p id="status" class="text-lg text-slate-400">Người chơi (X) đi trước</p>
+    </div>
+
+    <div id="board" class="board"></div>
+
+    <button id="resetBtn" class="mt-8 px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-opacity-75 hidden">
+        Chơi lại
+    </button>
+
+    <script>
+        const SIZE = 10;
+        const WIN_CONDITION = 5;
+        const PLAYER = 1; // X
+        const AI = 2; // O
+        const EMPTY = 0;
+
+        let board = [];
+        let gameOver = false;
+        let isPlayerTurn = true;
+
+        const boardElement = document.getElementById('board');
+        const statusElement = document.getElementById('status');
+        const resetBtn = document.getElementById('resetBtn');
+
+        function init() {
+            board = Array.from({ length: SIZE }, () => Array(SIZE).fill(EMPTY));
+            gameOver = false;
+            isPlayerTurn = true;
+            statusElement.innerText = "Người chơi (X) đi trước";
+            resetBtn.classList.add('hidden');
+            renderBoard();
+        }
+
+        function renderBoard() {
+            boardElement.innerHTML = '';
+            for (let r = 0; r < SIZE; r++) {
+                for (let c = 0; c < SIZE; c++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.dataset.row = r;
+                    cell.dataset.col = c;
+                    cell.addEventListener('click', () => handlePlayerMove(r, c));
+                    boardElement.appendChild(cell);
+                }
+            }
+        }
+
+        function updateCell(r, c, player) {
+            board[r][c] = player;
+            const index = r * SIZE + c;
+            const cell = boardElement.children[index];
+            if (player === PLAYER) {
+                cell.textContent = 'X';
+                cell.classList.add('x');
+            } else {
+                cell.textContent = 'O';
+                cell.classList.add('o');
+            }
+        }
+
+        function handlePlayerMove(r, c) {
+            if (gameOver || !isPlayerTurn || board[r][c] !== EMPTY) return;
+
+            updateCell(r, c, PLAYER);
+            
+            if (checkWin(r, c, PLAYER)) {
+                endGame("Người chơi (X) thắng!");
+                return;
+            }
+
+            if (isDraw()) {
+                endGame("Hòa!");
+                return;
+            }
+
+            isPlayerTurn = false;
+            statusElement.innerText = "Máy (O) đang tính toán...";
+            
+            // Allow UI to update before blocking main thread
+            setTimeout(makeAIMove, 50);
+        }
+
+        function makeAIMove() {
+            if (gameOver) return;
+
+            let bestScore = -Infinity;
+            let move = { r: -1, c: -1 };
+
+            for (let r = 0; r < SIZE; r++) {
+                for (let c = 0; c < SIZE; c++) {
+                    if (board[r][c] === EMPTY) {
+                        const attackScore = evaluatePosition(r, c, AI);
+                        const defenseScore = evaluatePosition(r, c, PLAYER);
+                        
+                        // Hệ số phòng thủ cao hơn để AI chặn chặt chẽ các nước đi của người chơi
+                        const score = attackScore + (defenseScore * 1.2); 
+
+                        if (score > bestScore) {
+                            bestScore = score;
+                            move = { r, c };
+                        } else if (score === bestScore) {
+                            // Chọn ngẫu nhiên nếu điểm bằng nhau để tránh máy đánh theo một mẫu duy nhất
+                            if (Math.random() > 0.5) {
+                                move = { r, c };
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Mặc định đánh giữa nếu là nước đầu tiên của máy và chưa có chiến thuật rõ ràng
+            if (move.r === -1) {
+                move = { r: Math.floor(SIZE/2), c: Math.floor(SIZE/2) };
+            }
+
+            updateCell(move.r, move.c, AI);
+
+            if (checkWin(move.r, move.c, AI)) {
+                endGame("Máy (O) thắng!");
+                return;
+            }
+
+            if (isDraw()) {
+                endGame("Hòa!");
+                return;
+            }
+
+            isPlayerTurn = true;
+            statusElement.innerText = "Lượt của Người chơi (X)";
+        }
+
+        // Đánh giá điểm số của một ô trống nếu đặt cờ vào đó
+        function evaluatePosition(r, c, player) {
+            const directions = [
+                [0, 1],  // Ngang
+                [1, 0],  // Dọc
+                [1, 1],  // Chéo chính
+                [1, -1]  // Chéo phụ
+            ];
+            
+            let totalScore = 0;
+
+            for (let [dr, dc] of directions) {
+                let consecutive = 1;
+                let blocks = 0;
+                let openEnds = 0;
+
+                // Kiểm tra chiều tiến
+                let i = 1;
+                while (r + i*dr >= 0 && r + i*dr < SIZE && c + i*dc >= 0 && c + i*dc < SIZE && board[r + i*dr][c + i*dc] === player) {
+                    consecutive++;
+                    i++;
+                }
+                if (r + i*dr < 0 || r + i*dr >= SIZE || c + i*dc < 0 || c + i*dc >= SIZE || board[r + i*dr][c + i*dc] !== EMPTY) {
+                    blocks++;
+                } else {
+                    openEnds++;
+                }
+
+                // Kiểm tra chiều lùi
+                i = 1;
+                while (r - i*dr >= 0 && r - i*dr < SIZE && c - i*dc >= 0 && c - i*dc < SIZE && board[r - i*dr][c - i*dc] === player) {
+                    consecutive++;
+                    i++;
+                }
+                if (r - i*dr < 0 || r - i*dr >= SIZE || c - i*dc < 0 || c - i*dc >= SIZE || board[r - i*dr][c - i*dc] !== EMPTY) {
+                    blocks++;
+                } else {
+                    openEnds++;
+                }
+
+                totalScore += getScoreMultiplier(consecutive, blocks, openEnds);
+            }
+
+            return totalScore;
+        }
+
+        function getScoreMultiplier(consecutive, blocks, openEnds) {
+            if (consecutive >= 5) return 1000000;
+            if (consecutive === 4) return blocks === 0 ? 50000 : 10000;
+            if (consecutive === 3) return blocks === 0 ? 5000 : 500;
+            if (consecutive === 2) return blocks === 0 ? 200 : 50;
+            return 1;
+        }
+
+        function checkWin(row, col, player) {
+            const directions = [
+                [0, 1], [1, 0], [1, 1], [1, -1]
+            ];
+
+            for (let [dr, dc] of directions) {
+                let count = 1;
+                let winningCells = [[row, col]];
+
+                // Chiều dương
+                let r = row + dr;
+                let c = col + dc;
+                while (r >= 0 && r < SIZE && c >= 0 && c < SIZE && board[r][c] === player) {
+                    count++;
+                    winningCells.push([r, c]);
+                    r += dr;
+                    c += dc;
+                }
+
+                // Chiều âm
+                r = row - dr;
+                c = col - dc;
+                while (r >= 0 && r < SIZE && c >= 0 && c < SIZE && board[r][c] === player) {
+                    count++;
+                    winningCells.push([r, c]);
+                    r -= dr;
+                    c -= dc;
+                }
+
+                if (count >= WIN_CONDITION) {
+                    highlightWinningCells(winningCells);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function highlightWinningCells(cells) {
+            cells.forEach(([r, c]) => {
+                const index = r * SIZE + c;
+                boardElement.children[index].classList.add('win-line');
+            });
+        }
+
+        function isDraw() {
+            return board.every(row => row.every(cell => cell !== EMPTY));
+        }
+
+        function endGame(message) {
+            gameOver = true;
+            statusElement.innerText = message;
+            resetBtn.classList.remove('hidden');
+        }
+
+        resetBtn.addEventListener('click', init);
+
+        init();
+    </script>
+</body>
+</html>

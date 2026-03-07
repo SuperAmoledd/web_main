@@ -13,14 +13,14 @@ var Buttons = (function () {
 
         var activeElement = elements[initialActiveIndex];
 
-        var refresh = function () {
+        var refresh = function () {  
             for (var i = 0; i < elements.length; ++i) {
                 if (elements[i] === activeElement) {
                     elements[i].className = 'button-selected';
                 } else {
                     elements[i].className = 'button-unselected';
                 }
-            }
+            } 
         };
 
         for (var i = 0; i < elements.length; ++i) {

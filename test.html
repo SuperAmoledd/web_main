@@ -3,151 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-
+    <title>Advanced Custom Cursor</title>
     <style>
         body {
-  background-color: var(--color-just-black);
-  overscroll-behavior: none;
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden;
-}
+            height: 100vh;
+            background-color: #1a1a1a; /* Nền tối để thấy rõ hiệu ứng */
+            cursor: none; /* Ẩn chuột mặc định */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
-.header {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  padding-top: 2.5rem;
-}
+        /* --- Lớp bao bọc --- */
+        .cursor-dot,
+        .cursor-outline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            pointer-events: none; /* Click xuyên qua */
+            z-index: 9999;
+        }
 
-#smooth-content {
-  overflow: visible;
-  width: 100%;
-  /* set a height because the contents are position: absolute, thus natively there's no height */
-  height: 4000px;
-  background-image: linear-gradient(
-      rgba(255, 255, 255, 0.07) 2px,
-      transparent 2px
-    ),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.07) 2px, transparent 2px),
-    linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
-  background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
-  background-position: -2px -2px, -2px -2px, -1px -1px, -1px -1px;
-}
+        /* --- 1. Chấm nhỏ (Con trỏ chính) --- */
+        .cursor-dot {
+            width: 8px;
+            height: 8px;
+            background-color: white;
+        }
 
-button {
-  position: relative;
-  margin-top: 1rem;
-}
+        /* --- 2. Vòng tròn lớn (Hiệu ứng đi theo) --- */
+        .cursor-outline {
+            width: 40px;
+            height: 40px;
+            /* Gradient cũ của bạn */
+            border: 2px solid transparent; /* Để dùng border gradient cần trick hoặc để background */
+            background-image: linear-gradient(#1a1a1a, #1a1a1a), /* Giả lập rỗng ruột */
+                              linear-gradient(245deg, #fcb564, #ff65f2, #d66efd);
+            background-origin: border-box;
+            background-clip: content-box, border-box;
+            
+            /* Hiệu ứng chuyển động mượt khi hover */
+            transition: width 0.2s, height 0.2s, background-color 0.2s;
+        }
 
-heading-l {
-  margin-top: 2rem;
-}
+        /* --- 3. Trạng thái khi Hover vào nút/link --- */
+        body.hovering .cursor-outline {
+            width: 70px; /* Phóng to */
+            height: 70px;
+            background: rgba(255, 255, 255, 0.1); /* Mờ đi */
+            border-color: rgba(255, 255, 255, 0.5);
+        }
 
-.box,
-.shape {
-  width: 100px;
-  height: 100px;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 100;
-  line-height: 100px;
-  text-align: center;
-  will-change: transform;
-}
-.box.active {
-  outline: 2px var(--color-surface-white);
-}
-
-.box-a {
-  top: 400px;
-}
-
-.box-b {
-  top: 900px;
-}
-
-.shape {
-  top: 1300px;
-  will-change: transform;
-}
-
-.line {
-  visibility: hidden;
-  width: 2px;
-  height: 4000px;
-  position: absolute;
-  left: 400px;
-  top: 0px;
-  background-color: #777;
-}
-
-footer {
-  position: fixed;
-  right: 0px;
-  bottom: 0px;
-  padding: 6px 10px 10px 12px;
-  border-top-left-radius: 26px;
-  z-index: 100;
-  background-color: rgba(0, 0, 0, 0.5);
-}
-
-.end {
-  position: absolute;
-  /*   bottom: 0; */
-  top: 2400px;
-  transform: translateY(-100%);
-  font-size: 30px;
-  color: white;
-}
+        /* Nút demo */
+        button {
+            padding: 15px 30px;
+            font-size: 20px;
+            background: transparent;
+            color: white;
+            border: 1px solid #ff65f2;
+            cursor: none; /* Quan trọng: ẩn chuột hệ thống khi hover vào nút */
+            border-radius: 8px;
+        }
     </style>
 </head>
 <body>
-    <div id="smooth-wrapper">
-  <div id="smooth-content">
-    <header class="header">
-      <h1 class="heading-l heading-scroll">ScrollSmoother</h1>
-      <button class="button">Jump to shape</button>
-    </header>
-    <div class="box box-a gradient-pink" data-speed="clamp(0.5)">a</div>
-    <div class="box box-b gradient-purple" data-speed="clamp(0.8)">b</div>
-    <img class="shape" data-speed="1.5" src="https://assets.codepen.io/16327/2D-keyframe-2.png" alt="" />
-    <div class="line"></div>
-  </div>
-</div>
 
-<script>gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
+    <div class="cursor-dot" id="cursor-dot"></div>
+    <div class="cursor-outline" id="cursor-outline"></div>
 
-// create the smooth scroller FIRST!
-let smoother = ScrollSmoother.create({
-  smooth: 2,
-  effects: true,
-  normalizeScroll: true
-});
+    <button>Hover Me!</button>
 
-// pin shape when it reaches the center of the viewport, for 300px
-ScrollTrigger.create({
-  trigger: ".shape",
-  pin: true,
-  start: "center center",
-  end: "+=300"
-});
+    <script>
+        const dot = document.getElementById("cursor-dot");
+        const outline = document.getElementById("cursor-outline");
+        
+        let mouseX = 0, mouseY = 0; // Vị trí chuột thật
+        let outlineX = 0, outlineY = 0; // Vị trí vòng tròn (để tạo độ trễ)
 
-document.querySelector("button").addEventListener("click", (e) => {
-  // scroll to the spot where the shape is in the center.
-  // parameters: element, smooth, position
-  smoother.scrollTo(".shape", true, "center center");
+        // 1. Lấy tọa độ chuột
+        document.addEventListener("mousemove", (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            
+            // Dot đi theo ngay lập tức (không trễ)
+            dot.style.transform = `translate(${mouseX}px, ${mouseY}px) translate(-50%, -50%)`;
+        });
 
-  // or you could animate the scrollTop:
-  // gsap.to(smoother, {
-  //  scrollTop: smoother.offset(".shape", "center center"),
-  //  duration: 1
-  // });
-});
-</script>
+        // 2. Tạo hiệu ứng quán tính (Lag effect) cho vòng tròn
+        function animate() {
+            // Công thức nội suy tuyến tính (Lerp): Vị trí hiện tại + (Đích - Hiện tại) * tốc độ
+            outlineX += (mouseX - outlineX) * 0.15; // 0.15 là độ mượt (càng nhỏ càng chậm)
+            outlineY += (mouseY - outlineY) * 0.15;
+
+            outline.style.transform = `translate(${outlineX}px, ${outlineY}px) translate(-50%, -50%)`;
+
+            requestAnimationFrame(animate); // Chạy liên tục theo FPS màn hình
+        }
+        animate();
+
+        // 3. Xử lý Hover (Phóng to khi vào link/button)
+        const interactiveElements = document.querySelectorAll('a, button, input');
+
+        interactiveElements.forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                document.body.classList.add('hovering');
+            });
+            el.addEventListener('mouseleave', () => {
+                document.body.classList.remove('hovering');
+            });
+        });
+    </script>
 </body>
-</html>
+</html> 
