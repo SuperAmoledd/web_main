@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Edu Flappy Bird</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --sky-top: #87CEEB;
+        --sky-bottom: #E0F6FF;
+        --primary: #FF7E67;
+        --primary-dark: #E66A55;
+        --text: #2C3E50;
+        --bg-glass: rgba(255, 255, 255, 0.9);
+    }
+
+    * { box-sizing: border-box; user-select: none; }
+
+    body {
+        margin: 0; padding: 0;
+        background-color: #1a1a2e;
+        display: flex; justify-content: center; align-items: center;
+        height: 100dvh;
+        font-family: 'Nunito', sans-serif;
+        overflow: hidden;
+    }
+
+    #game-container {
+        position: relative;
+        width: 100%; max-width: 420px;
+        height: 100%; max-height: 800px;
+        background: linear-gradient(var(--sky-top), var(--sky-bottom));
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    @media (min-width: 421px) {
+        #game-container { border-radius: 20px; height: 90dvh; }
+    }
+
+    canvas { display: block; width: 100%; height: 100%; }
+
+    .ui-layer {
+        position: absolute; top: 0; left: 0;
+        width: 100%; height: 100%;
+        display: flex; flex-direction: column;
+        justify-content: center; align-items: center;
+        z-index: 10; pointer-events: none;
+    }
+
+    .modal {
+        background: var(--bg-glass);
+        backdrop-filter: blur(5px);
+        padding: 30px; border-radius: 20px;
+        text-align: center; pointer-events: auto;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        border: 2px solid rgba(255,255,255,0.5);
+        transform: scale(0.9); opacity: 0;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .modal.active { transform: scale(1); opacity: 1; }
+    .hidden { display: none !important; }
+
+    h1 {
+        font-family: 'Fredoka One', cursive;
+        color: var(--primary);
+        font-size: 2.5rem; margin: 0 0 10px 0;
+        text-shadow: 2px 2px 0 #FFF, 0px 4px 10px rgba(0,0,0,0.2);
+    }
+
+    p { color: var(--text); font-size: 1.1rem; margin-bottom: 20px; }
+
+    .btn {
+        background: var(--primary); color: white;
+        border: none; padding: 12px 30px;
+        font-size: 1.2rem; font-family: 'Fredoka One', cursive;
+        border-radius: 50px; cursor: pointer;
+        box-shadow: 0 6px 0 var(--primary-dark), 0 10px 10px rgba(0,0,0,0.2);
+        transition: transform 0.1s, box-shadow 0.1s;
+        width: 100%; margin-top: 10px;
+    }
+
+    .btn:active { transform: translateY(6px); box-shadow: 0 0 0 var(--primary-dark); }
+
+    #score-hud {
+        position: absolute; top: 15%; left: 0; width: 100%;
+        text-align: center; z-index: 5; pointer-events: none;
+        font-family: 'Fredoka One', cursive; font-size: 4rem;
+        color: white; -webkit-text-stroke: 2px var(--text);
+        text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    /* Quiz Modal Specific */
+    #quiz-modal {
+        width: 90%; background: white;
+        padding: 20px; border-radius: 15px;
+        border: 4px solid #4ECDC4;
+    }
+
+    #question-text {
+        font-size: 1.3rem; font-weight: 800;
+        color: var(--text); margin-bottom: 20px;
+    }
+
+    .ans-btn {
+        background: #F7F9FC; color: var(--text);
+        border: 2px solid #E2E8F0; padding: 15px;
+        margin: 8px 0; border-radius: 10px;
+        font-family: 'Nunito', sans-serif; font-size: 1.1rem;
+        font-weight: 600; cursor: pointer;
+        width: 100%; text-align: left;
+        transition: all 0.2s; pointer-events: auto;
+    }
+
+    .ans-btn:hover { background: #E2E8F0; transform: translateX(5px); }
+    .ans-btn.correct { background: #4ECDC4; color: white; border-color: #45b7af; }
+    .ans-btn.wrong { background: #FF6B6B; color: white; border-color: #e66060; }
+
+    .stats-box {
+        display: flex; justify-content: space-around;
+        background: #F0F4F8; border-radius: 10px;
+        padding: 10px; margin-bottom: 20px;
+    }
+    .stats-box div { font-weight: 800; font-size: 1.2rem; color: var(--text); }
+    .stats-box span { display: block; font-size: 0.8rem; color: #718096; text-transform: uppercase; }
+</style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="score-hud">0</div>
+    <canvas id="gameCanvas"></canvas>
+    
+    <div class="ui-layer" id="start-screen">
+        <div class="modal active">
+            <h1>Flappy English</h1>
+            <p>Vượt qua ống và trả lời câu hỏi!</p>
+            <button class="btn" id="start-btn">CHƠI NGAY</button>
+        </div>
+    </div>
+
+    <div class="ui-layer hidden" id="quiz-screen">
+        <div class="modal" id="quiz-modal">
+            <div id="question-text">Question here?</div>
+            <div id="answers-container"></div>
+        </div>
+    </div>
+
+    <div class="ui-layer hidden" id="game-over-screen">
+        <div class="modal">
+            <h1 style="color: #FF6B6B;">GAME OVER</h1>
+            <div class="stats-box">
+                <div><span>Điểm</span><span id="final-score" style="color:var(--text); font-size:1.5rem">0</span></div>
+                <div><span>Kỷ lục</span><span id="best-score" style="color:var(--text); font-size:1.5rem">0</span></div>
+            </div>
+            <p id="fail-reason" style="font-size: 0.9rem; color: #FF6B6B; font-weight: bold;"></p>
+            <button class="btn" id="restart-btn">CHƠI LẠI</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* =======================================================================
+       KHU VỰC THÊM CÂU HỎI TIẾNG ANH (SỬA Ở ĐÂY)
+       ======================================================================= */
+    const QUIZ_DATA = [
+    // --- MỨC ĐỘ 4.0 - 5.0 (DỄ) ---
+    {
+        question: "I ___ a student at a local university.",
+        answers: ["am", "is", "are", "be"],
+        correctIndex: 0
+    },
+    {
+        question: "They ___ to the cinema every Saturday.",
+        answers: ["goes", "go", "going", "went"],
+        correctIndex: 1
+    },
+    {
+        question: "Look! The bus ___.",
+        answers: ["is coming", "comes", "come", "has come"],
+        correctIndex: 0
+    },
+    {
+        question: "I don't have ___ money in my pocket.",
+        answers: ["some", "any", "many", "a"],
+        correctIndex: 1
+    },
+    {
+        question: "This book is ___ than that one.",
+        answers: ["more cheap", "cheaper", "cheapier", "more cheaper"],
+        correctIndex: 1
+    },
+    {
+        question: "Where ___ you born?",
+        answers: ["did", "was", "were", "are"],
+        correctIndex: 2
+    },
+    {
+        question: "He ___ breakfast at 7 AM yesterday.",
+        answers: ["had", "has", "eats", "have"],
+        correctIndex: 0
+    },
+    {
+        question: "Từ nào trái nghĩa với 'Hot'?",
+        answers: ["Warm", "Cold", "Sunny", "Dry"],
+        correctIndex: 1
+    },
+    {
+        question: "She is interested ___ learning English.",
+        answers: ["on", "at", "in", "for"],
+        correctIndex: 2
+    },
+    {
+        question: "How ___ apples do you need?",
+        answers: ["much", "many", "long", "often"],
+        correctIndex: 1
+    },
+    {
+        question: "I ___ a new car last month.",
+        answers: ["buy", "bought", "buys", "buying"],
+        correctIndex: 1
+    },
+    {
+        question: "It is very ___ today. Take an umbrella.",
+        answers: ["sunny", "rainy", "windy", "hot"],
+        correctIndex: 1
+    },
+    {
+        question: "My father is a ___. He works in a hospital.",
+        answers: ["teacher", "doctor", "driver", "farmer"],
+        correctIndex: 1
+    },
+    {
+        question: "Can you ___ the door, please?",
+        answers: ["open", "opening", "opened", "opens"],
+        correctIndex: 0
+    },
+    {
+        question: "We ___ watching TV at the moment.",
+        answers: ["is", "am", "are", "be"],
+        correctIndex: 2
+    },
+    {
+        question: "There ___ five people in my family.",
+        answers: ["is", "are", "was", "were"],
+        correctIndex: 1
+    },
+    {
+        question: "What time ___ you get up?",
+        answers: ["do", "does", "did", "are"],
+        correctIndex: 0
+    },
+    {
+        question: "I like fruits, ___ apples and bananas.",
+        answers: ["such as", "but", "so", "because"],
+        correctIndex: 0
+    },
+    {
+        question: "This is the ___ building in the city.",
+        answers: ["tallest", "taller", "tall", "most tall"],
+        correctIndex: 0
+    },
+    {
+        question: "___ you ever been to Paris?",
+        answers: ["Do", "Did", "Have", "Has"],
+        correctIndex: 2
+    },
+    {
+        question: "She can speak English very ___.",
+        answers: ["good", "well", "bad", "slow"],
+        correctIndex: 1
+    },
+    {
+        question: "He usually ___ to work by bus.",
+        answers: ["go", "goes", "went", "going"],
+        correctIndex: 1
+    },
+    {
+        question: "Don't ___ noise in the library.",
+        answers: ["do", "make", "take", "get"],
+        correctIndex: 1
+    },
+    {
+        question: "I'm sorry, I ___ my homework at home.",
+        answers: ["forgot", "left", "missed", "lost"],
+        correctIndex: 1
+    },
+    {
+        question: "Could you tell me the ___ to the post office?",
+        answers: ["road", "way", "street", "path"],
+        correctIndex: 1
+    },
+
+    // --- MỨC ĐỘ 5.5 - 6.5 (TRUNG BÌNH) ---
+    {
+        question: "If I ___ you, I would take that job offer.",
+        answers: ["am", "was", "were", "had been"],
+        correctIndex: 2
+    },
+    {
+        question: "The man ___ is sitting over there is my uncle.",
+        answers: ["who", "whom", "which", "whose"],
+        correctIndex: 0
+    },
+    {
+        question: "I'm looking forward to ___ you again soon.",
+        answers: ["see", "seeing", "seen", "saw"],
+        correctIndex: 1
+    },
+    {
+        question: "The movie was so ___ that I fell asleep.",
+        answers: ["bore", "boring", "bored", "bores"],
+        correctIndex: 1
+    },
+    {
+        question: "He has been working here ___ 2010.",
+        answers: ["for", "since", "during", "in"],
+        correctIndex: 1
+    },
+    {
+        question: "By the time we arrived, the train ___.",
+        answers: ["left", "has left", "had left", "was leaving"],
+        correctIndex: 2
+    },
+    {
+        question: "You ___ better see a doctor if your cough gets worse.",
+        answers: ["should", "had", "would", "must"],
+        correctIndex: 1
+    },
+    {
+        question: "I suggested ___ to the park instead of the mall.",
+        answers: ["go", "to go", "going", "gone"],
+        correctIndex: 2
+    },
+    {
+        question: "The house ___ built in 1995.",
+        answers: ["is", "was", "were", "has been"],
+        correctIndex: 1
+    },
+    {
+        question: "I'm not used to ___ up so early.",
+        answers: ["get", "getting", "got", "be getting"],
+        correctIndex: 1
+    },
+    {
+        question: "___ of the rain, we cancelled the picnic.",
+        answers: ["Because", "Despite", "In spite", "Because of"],
+        correctIndex: 3
+    },
+    {
+        question: "He asked me where ___ from.",
+        answers: ["did I come", "I came", "do I come", "I come"],
+        correctIndex: 1
+    },
+    {
+        question: "That's the restaurant ___ we had our first date.",
+        answers: ["which", "where", "when", "that"],
+        correctIndex: 1
+    },
+    {
+        question: "You don't like spicy food, ___ you?",
+        answers: ["don't", "do", "are", "aren't"],
+        correctIndex: 1
+    },
+    {
+        question: "The more you practice, ___ you will become.",
+        answers: ["the good", "the better", "better", "the best"],
+        correctIndex: 1
+    },
+    {
+        question: "I'm thinking of ___ my job next month.",
+        answers: ["quit", "quitting", "to quit", "quitted"],
+        correctIndex: 1
+    },
+    {
+        question: "Although it was cold, ___ they went swimming.",
+        answers: ["but", "however", "still", "X (không điền gì)"],
+        correctIndex: 3
+    },
+    {
+        question: "Can you turn ___ the lights? It's too bright.",
+        answers: ["on", "off", "up", "down"],
+        correctIndex: 1
+    },
+    {
+        question: "We need to ___ a decision soon.",
+        answers: ["do", "make", "get", "take"],
+        correctIndex: 1
+    },
+    {
+        question: "She is the ___ intelligent girl in my class.",
+        answers: ["more", "most", "best", "very"],
+        correctIndex: 1
+    },
+    {
+        question: "I have ___ friends in this city, so I feel a bit lonely.",
+        answers: ["few", "a few", "little", "a little"],
+        correctIndex: 0
+    },
+    {
+        question: "I wish I ___ more money to buy that car.",
+        answers: ["have", "has", "had", "would have"],
+        correctIndex: 2
+    },
+    {
+        question: "My brother is very ___ at playing guitar.",
+        answers: ["good", "well", "badly", "slowly"],
+        correctIndex: 0
+    },
+    {
+        question: "The news ___ very shocking.",
+        answers: ["is", "are", "were", "be"],
+        correctIndex: 0
+    },
+    {
+        question: "Could you ___ me a favor?",
+        answers: ["do", "make", "give", "get"],
+        correctIndex: 0
+    },
+
+    // --- MỨC ĐỘ 7.0 - 8.0 (KHÓ - NÂNG CAO) ---
+    {
+        question: "Hardly ___ entered the room when the phone rang.",
+        answers: ["I had", "had I", "did I", "I was"],
+        correctIndex: 1
+    },
+    {
+        question: "It is essential that he ___ his medicine on time.",
+        answers: ["take", "takes", "took", "taking"],
+        correctIndex: 0
+    },
+    {
+        question: "The project was successful ___ to his hard work.",
+        answers: ["result", "consequence", "owing", "thanks"],
+        correctIndex: 2
+    },
+    {
+        question: "Should you need any further information, please ___ me.",
+        answers: ["contacting", "to contact", "contact", "will contact"],
+        correctIndex: 2
+    },
+    {
+        question: "He is said ___ the youngest person to climb Everest.",
+        answers: ["to be", "being", "that he is", "was"],
+        correctIndex: 0
+    },
+    {
+        question: "I'd rather you ___ tell anyone about this.",
+        answers: ["don't", "didn't", "not", "won't"],
+        correctIndex: 1
+    },
+    {
+        question: "The city has undergone ___ changes in recent years.",
+        answers: ["enormous", "slight", "minimal", "minute"],
+        correctIndex: 0
+    },
+    {
+        question: "She finally ___ her fear of public speaking.",
+        answers: ["overcame", "overtook", "overlooked", "overwhelmed"],
+        correctIndex: 0
+    },
+    {
+        question: "Not only ___ beautiful but she is also very smart.",
+        answers: ["she is", "is she", "has she", "does she"],
+        correctIndex: 1
+    },
+    {
+        question: "I cannot ___ the importance of wearing a seatbelt.",
+        answers: ["emphasize", "overstate", "underline", "all are correct"],
+        correctIndex: 3
+    },
+    {
+        question: "Reading: 'The rapid depletion of fossil fuels has prompted scientists to explore renewable energy.' Câu này nói về gì?",
+        answers: ["Sự cạn kiệt năng lượng", "Năng lượng hóa thạch dồi dào", "Nghiên cứu hạt nhân", "Sự bảo thủ của giới khoa học"],
+        correctIndex: 0
+    },
+    {
+        question: "Idiom: 'A blessing in disguise' means:",
+        answers: ["Một món quà bí mật", "Một điều xấu hóa ra lại tốt", "Một lời cầu nguyện", "Sự cải trang"],
+        correctIndex: 1
+    },
+    {
+        question: "The company's profits have been ___ by the economic crisis.",
+        answers: ["eroded", "corroded", "decayed", "rotten"],
+        correctIndex: 0
+    },
+    {
+        question: "Regardless ___ the weather, the event will go ahead.",
+        answers: ["to", "with", "of", "for"],
+        correctIndex: 2
+    },
+    {
+        question: "Had I known about the traffic, I ___ earlier.",
+        answers: ["would leave", "will leave", "would have left", "had left"],
+        correctIndex: 2
+    },
+    {
+        question: "The government needs to ___ the problem of unemployment.",
+        answers: ["address", "dress", "direct", "speak"],
+        correctIndex: 0
+    },
+    {
+        question: "He was ___ with murder but later acquitted.",
+        answers: ["accused", "charged", "blamed", "arrested"],
+        correctIndex: 1
+    },
+    {
+        question: "The argument was based on a ___ premise.",
+        answers: ["flawed", "flowed", "flaring", "fleeting"],
+        correctIndex: 0
+    },
+    {
+        question: "Phrasal verb: To 'call off' means:",
+        answers: ["To shout", "To delay", "To cancel", "To visit"],
+        correctIndex: 2
+    },
+    {
+        question: "Reading: 'The study suggests a correlation between sleep and productivity.' Nghĩa của 'correlation' là:",
+        answers: ["Sự khác biệt", "Sự tương quan", "Sự mâu thuẫn", "Sự lặp lại"],
+        correctIndex: 1
+    },
+    {
+        question: "I'm afraid I've ___ out of milk.",
+        answers: ["gone", "run", "taken", "come"],
+        correctIndex: 1
+    },
+    {
+        question: "It was a ___ error that cost them the championship.",
+        answers: ["fatal", "dead", "killing", "mortal"],
+        correctIndex: 0
+    },
+    {
+        question: "The instructions were so ___ that everyone got confused.",
+        answers: ["ambiguous", "clear", "explicit", "concise"],
+        correctIndex: 0
+    },
+    {
+        question: "He is a ___ person who always thinks before acting.",
+        answers: ["impulsive", "prudent", "reckless", "careless"],
+        correctIndex: 1
+    },
+    {
+        question: "The new policy came into ___ yesterday.",
+        answers: ["force", "power", "rule", "law"],
+        correctIndex: 0
+    },
+
+    // --- MỨC ĐỘ 8.5 - 9.0 (RẤT KHÓ - SIÊU KHÓ) ---
+    {
+        question: "The witness gave a very ___ account of the events.",
+        answers: ["vague", "cogent", "blurred", "fuzzy"],
+        correctIndex: 1
+    },
+    {
+        question: "He was so ___ in his work that he didn't hear me enter.",
+        answers: ["engrossed", "occupied", "attached", "distracted"],
+        correctIndex: 0
+    },
+    {
+        question: "The results of the experiment were ___.",
+        answers: ["inconclusive", "unconcluded", "disconcluded", "non-conclusive"],
+        correctIndex: 0
+    },
+    {
+        question: "Such was the ___ of the storm that many trees were uprooted.",
+        answers: ["intensity", "ferocity", "magnitude", "all are correct"],
+        correctIndex: 3
+    },
+    {
+        question: "The legal system is based on the ___ of 'innocent until proven guilty'.",
+        answers: ["presumption", "assumption", "deduction", "speculation"],
+        correctIndex: 0
+    },
+    {
+        question: "He is the ___ of kindness.",
+        answers: ["epitome", "example", "paragon", "both 0 and 2"],
+        correctIndex: 3
+    },
+    {
+        question: "The disease has been virtually ___ in developed countries.",
+        answers: ["eradicated", "exterminated", "deleted", "erased"],
+        correctIndex: 0
+    },
+    {
+        question: "The negotiator's approach was described as ___.",
+        answers: ["conciliatory", "aggressive", "hostile", "stubborn"],
+        correctIndex: 0
+    },
+    {
+        question: "Idiom: 'To bite the bullet' means:",
+        answers: ["Ăn cái gì đó cứng", "Chấp nhận một điều đau đớn khó tránh khỏi", "Rất tức giận", "Tự sát"],
+        correctIndex: 1
+    },
+    {
+        question: "The author's prose is often praised for its ___.",
+        answers: ["brevity", "long-windedness", "redundancy", "complexity"],
+        correctIndex: 0
+    },
+    {
+        question: "The subtle ___ of the language are hard for learners to grasp.",
+        answers: ["nuances", "noises", "notions", "nodes"],
+        correctIndex: 0
+    },
+    {
+        question: "Her performance was ___ with standing ovations.",
+        answers: ["met", "greeted", "received", "all are correct"],
+        correctIndex: 3
+    },
+    {
+        question: "The project was ___ with difficulties from the start.",
+        answers: ["beset", "surrounded", "filled", "covered"],
+        correctIndex: 0
+    },
+    {
+        question: "Reading: 'The intrinsic value of the artwork lies in its historical context.' Nghĩa của 'intrinsic' là:",
+        answers: ["Bên ngoài", "Nội tại/Bản chất", "Kinh tế", "Thẩm mỹ"],
+        correctIndex: 1
+    },
+    {
+        question: "The decision was made with the ___ of the committee.",
+        answers: ["acquiescence", "rejection", "denial", "refusal"],
+        correctIndex: 0
+    },
+    {
+        question: "He gave a ___ response, avoiding the main issue.",
+        answers: ["direct", "evasive", "straightforward", "candid"],
+        correctIndex: 1
+    },
+    {
+        question: "The evidence against him was purely ___.",
+        answers: ["circumstantial", "concrete", "solid", "direct"],
+        correctIndex: 0
+    },
+    {
+        question: "The economy is showing signs of ___ after the recession.",
+        answers: ["resurgence", "decline", "stagnation", "slump"],
+        correctIndex: 0
+    },
+    {
+        question: "She has an ___ ability to predict market trends.",
+        answers: ["uncanny", "ordinary", "usual", "common"],
+        correctIndex: 0
+    },
+    {
+        question: "The atmosphere in the room was ___ with tension.",
+        answers: ["thick", "palpable", "heavy", "all are correct"],
+        correctIndex: 3
+    },
+    {
+        question: "He is known for his ___ wit and sharp tongue.",
+        answers: ["acerbic", "sweet", "mild", "gentle"],
+        correctIndex: 0
+    },
+    {
+        question: "The city's infrastructure is ___ and needs urgent repair.",
+        answers: ["dilapidated", "modern", "sturdy", "intact"],
+        correctIndex: 0
+    },
+    {
+        question: "Idiom: 'To beat around the bush' means:",
+        answers: ["Cắt cỏ", "Nói vòng vo", "Đi lạc trong rừng", "Nói thẳng"],
+        correctIndex: 1
+    },
+    {
+        question: "The scientists discovered a ___ breakthrough in cancer research.",
+        answers: ["pivotal", "minor", "trivial", "insignificant"],
+        correctIndex: 0
+    },
+    {
+        question: "The speech was full of ___ and lacked substance.",
+        answers: ["rhetoric", "facts", "data", "evidence"],
+        correctIndex: 0
+    },
+    {
+        question: "Her argument was ___ and well-reasoned.",
+        answers: ["lucid", "confusing", "opaque", "muddled"],
+        correctIndex: 0
+    },
+    {
+        question: "The law was ___ because it violated human rights.",
+        answers: ["repealed", "enacted", "passed", "introduced"],
+        correctIndex: 0
+    },
+    {
+        question: "They lived in a state of ___ poverty.",
+        answers: ["abject", "wealthy", "moderate", "comfortable"],
+        correctIndex: 0
+    },
+    {
+        question: "The mountain peaks were ___ in mist.",
+        answers: ["shrouded", "exposed", "cleared", "revealed"],
+        correctIndex: 0
+    },
+    {
+        question: "He managed to ___ the guards and escape.",
+        answers: ["elude", "include", "conclude", "preclude"],
+        correctIndex: 0
+    }
+];
+    /* ======================================================================= */
+
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    const uiStart = document.getElementById('start-screen');
+    const uiQuiz = document.getElementById('quiz-screen');
+    const quizModal = document.getElementById('quiz-modal');
+    const uiGameOver = document.getElementById('game-over-screen');
+    const scoreHud = document.getElementById('score-hud');
+    
+    const questionText = document.getElementById('question-text');
+    const answersContainer = document.getElementById('answers-container');
+    const finalScoreEl = document.getElementById('final-score');
+    const bestScoreEl = document.getElementById('best-score');
+    const failReasonEl = document.getElementById('fail-reason');
+
+    let GAME_WIDTH = canvas.offsetWidth;
+    let GAME_HEIGHT = canvas.offsetHeight;
+    canvas.width = GAME_WIDTH;
+    canvas.height = GAME_HEIGHT;
+
+    // Biến trạng thái
+    let state = 'START'; // START, PLAY, QUIZ, OVER
+    let score = 0;
+    let bestScore = localStorage.getItem('flappyEngBest') || 0;
+    let frames = 0;
+    let currentPipeIndex = null;
+    let particles = [];
+
+    // Cấu hình vật lý
+    const GRAVITY = 0.25;
+    const JUMP = -5.5;
+    const SPEED = 2.5;
+
+    // Đối tượng chim
+    const bird = {
+        x: GAME_WIDTH * 0.2, y: GAME_HEIGHT / 2,
+        radius: 14, velocity: 0, rotation: 0, flapFrame: 0,
+        
+        draw() {
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            ctx.rotate(this.rotation);
+
+            // Thân chim
+            let grad = ctx.createRadialGradient(0, -2, 2, 0, 0, this.radius);
+            grad.addColorStop(0, '#FFD166');
+            grad.addColorStop(1, '#F4A261');
+            ctx.fillStyle = grad;
+            ctx.beginPath(); ctx.arc(0, 0, this.radius, 0, Math.PI * 2); ctx.fill();
+            ctx.lineWidth = 2; ctx.strokeStyle = '#2C3E50'; ctx.stroke();
+
+            // Mắt
+            ctx.fillStyle = 'white';
+            ctx.beginPath(); ctx.arc(6, -4, 5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+            ctx.fillStyle = '#2C3E50';
+            ctx.beginPath(); ctx.arc(7, -4, 2, 0, Math.PI * 2); ctx.fill();
+
+            // Mỏ
+            ctx.fillStyle = '#E76F51';
+            ctx.beginPath(); ctx.moveTo(9, 2); ctx.lineTo(18, 5); ctx.lineTo(9, 8); ctx.closePath();
+            ctx.fill(); ctx.stroke();
+
+            // Cánh (chuyển động)
+            let wingY = Math.sin(this.flapFrame * 0.5) * 4;
+            ctx.fillStyle = '#F4A261';
+            ctx.beginPath(); ctx.ellipse(-4, 2 + wingY, 7, 4, -0.2, 0, Math.PI * 2);
+            ctx.fill(); ctx.stroke();
+
+            ctx.restore();
+        },
+        update() {
+            if (state === 'START') {
+                this.y = GAME_HEIGHT / 2 + Math.cos(frames * 0.05) * 10;
+                this.rotation = 0;
+                this.flapFrame++;
+                return;
+            }
+            if (state === 'PLAY' || state === 'OVER') {
+                this.velocity += GRAVITY;
+                this.y += this.velocity;
+                
+                if (this.velocity < 0) {
+                    this.rotation = Math.max(-25 * Math.PI / 180, this.rotation - 0.1);
+                    this.flapFrame++;
+                } else {
+                    this.rotation = Math.min(90 * Math.PI / 180, this.rotation + 0.04);
+                }
+
+                // Chạm đất
+                if (this.y + this.radius >= bg.y) {
+                    this.y = bg.y - this.radius;
+                    if (state === 'PLAY') triggerGameOver("Chim rơi xuống đất!");
+                }
+                // Chạm trần
+                if (this.y - this.radius <= 0) {
+                    this.y = this.radius;
+                    this.velocity = 0;
+                }
+            }
+        },
+        jump() {
+            this.velocity = JUMP;
+            createParticles(this.x - 10, this.y, '#FFFFFF', 5);
+        },
+        reset() {
+            this.y = GAME_HEIGHT / 2;
+            this.velocity = 0;
+            this.rotation = 0;
+        }
+    };
+
+    // Đối tượng Ống
+    const pipes = {
+        items: [], w: 60, gap: 160, dx: SPEED,
+        
+        draw() {
+            for (let i = 0; i < this.items.length; i++) {
+                let p = this.items[i];
+                
+                let drawPipe = (y, h, isTop) => {
+                    let grad = ctx.createLinearGradient(p.x, 0, p.x + this.w, 0);
+                    grad.addColorStop(0, '#73BF2E');
+                    grad.addColorStop(0.5, '#95E04C');
+                    grad.addColorStop(1, '#5B9C20');
+                    
+                    ctx.fillStyle = grad;
+                    ctx.lineWidth = 2; ctx.strokeStyle = '#2C3E50';
+                    
+                    // Thân ống
+                    ctx.fillRect(p.x, y, this.w, h);
+                    ctx.strokeRect(p.x, y, this.w, h);
+                    
+                    // Nắp ống
+                    let capY = isTop ? y + h - 24 : y;
+                    ctx.fillRect(p.x - 4, capY, this.w + 8, 24);
+                    ctx.strokeRect(p.x - 4, capY, this.w + 8, 24);
+
+                    // Highlight
+                    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                    ctx.fillRect(p.x + 4, y, 6, h);
+                    ctx.fillRect(p.x, capY + 2, this.w, 4);
+                };
+
+                drawPipe(0, p.top, true); // Ống trên
+                drawPipe(p.bottom, GAME_HEIGHT - p.bottom - bg.h, false); // Ống dưới
+                
+                // Vòng sáng nếu chưa trả lời
+                if (!p.passed && p.x < GAME_WIDTH) {
+                    ctx.fillStyle = 'rgba(255, 215, 0, 0.4)';
+                    ctx.fillRect(p.x + this.w, 0, 5, GAME_HEIGHT);
+                }
+            }
+        },
+        update() {
+            if (state !== 'PLAY') return;
+
+            // Sinh ống mới
+            if (frames % 100 === 0) {
+                let minH = 50;
+                let maxH = GAME_HEIGHT - bg.h - this.gap - 50;
+                let topH = Math.floor(Math.random() * (maxH - minH + 1) + minH);
+                this.items.push({
+                    x: GAME_WIDTH,
+                    top: topH,
+                    bottom: topH + this.gap,
+                    passed: false
+                });
+            }
+
+            for (let i = 0; i < this.items.length; i++) {
+                let p = this.items[i];
+                p.x -= this.dx;
+
+                // Xóa ống cũ
+                if (p.x + this.w < -20) {
+                    this.items.shift();
+                    i--;
+                    continue;
+                }
+
+                // Va chạm
+                if (bird.x + bird.radius - 2 > p.x && bird.x - bird.radius + 2 < p.x + this.w) {
+                    if (bird.y - bird.radius + 2 < p.top || bird.y + bird.radius - 2 > p.bottom) {
+                        triggerGameOver("Chim đâm trúng ống!");
+                    }
+                }
+
+                // Vượt ống -> Kích hoạt Quiz
+                if (p.x + this.w < bird.x && !p.passed) {
+                    p.passed = true;
+                    currentPipeIndex = i;
+                    triggerQuiz();
+                }
+            }
+        },
+        reset() { this.items = []; }
+    };
+
+    // Nền đất và mây
+    const bg = {
+        h: 120, y: GAME_HEIGHT - 120, x: 0, clouds: [],
+        init() {
+            for(let i=0; i<3; i++) {
+                this.clouds.push({x: Math.random() * GAME_WIDTH, y: Math.random() * 200 + 50, s: Math.random() * 0.5 + 0.5});
+            }
+        },
+        draw() {
+            // Mây
+            ctx.fillStyle = 'rgba(255,255,255,0.7)';
+            this.clouds.forEach(c => {
+                ctx.beginPath();
+                ctx.arc(c.x, c.y, 30*c.s, 0, Math.PI*2);
+                ctx.arc(c.x + 25*c.s, c.y - 10*c.s, 30*c.s, 0, Math.PI*2);
+                ctx.arc(c.x + 50*c.s, c.y, 30*c.s, 0, Math.PI*2);
+                ctx.fill();
+            });
+
+            // Đất
+            ctx.fillStyle = '#D8C99B';
+            ctx.fillRect(0, this.y, GAME_WIDTH, this.h);
+            ctx.fillStyle = '#73BF2E';
+            ctx.fillRect(0, this.y, GAME_WIDTH, 15);
+            ctx.lineWidth = 3; ctx.strokeStyle = '#2C3E50';
+            ctx.beginPath(); ctx.moveTo(0, this.y); ctx.lineTo(GAME_WIDTH, this.y); ctx.stroke();
+            
+            // Sọc đất
+            ctx.strokeStyle = '#C4B58A'; ctx.lineWidth = 4;
+            for(let i = 0; i < GAME_WIDTH + 30; i += 30) {
+                ctx.beginPath(); ctx.moveTo(i + this.x, this.y + 15);
+                ctx.lineTo(i - 20 + this.x, GAME_HEIGHT); ctx.stroke();
+            }
+        },
+        update() {
+            if (state === 'PLAY' || state === 'START') {
+                this.x = (this.x - SPEED) % 30;
+                this.clouds.forEach(c => {
+                    c.x -= SPEED * 0.2 * c.s;
+                    if (c.x < -100) { c.x = GAME_WIDTH + 50; c.y = Math.random() * 200 + 50; }
+                });
+            }
+        }
+    };
+
+    // Hiệu ứng hạt
+    function createParticles(x, y, color, count) {
+        for(let i=0; i<count; i++) {
+            particles.push({
+                x: x, y: y,
+                vx: (Math.random() - 0.5) * 4, vy: (Math.random() - 0.5) * 4,
+                life: 1, color: color
+            });
+        }
+    }
+    
+    function updateParticles() {
+        for(let i=0; i<particles.length; i++) {
+            let p = particles[i];
+            ctx.fillStyle = p.color;
+            ctx.globalAlpha = p.life;
+            ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI*2); ctx.fill();
+            ctx.globalAlpha = 1;
+            p.x += p.vx; p.y += p.vy; p.life -= 0.05;
+            if(p.life <= 0) { particles.splice(i, 1); i--; }
+        }
+    }
+
+    // Logic Quiz
+    function triggerQuiz() {
+        state = 'QUIZ';
+        bird.velocity = 0; 
+        uiQuiz.classList.remove('hidden');
+        setTimeout(() => quizModal.classList.add('active'), 10);
+
+        let qData = QUIZ_DATA[Math.floor(Math.random() * QUIZ_DATA.length)];
+        questionText.innerText = qData.question;
+        answersContainer.innerHTML = '';
+
+        qData.answers.forEach((ans, index) => {
+            let btn = document.createElement('button');
+            btn.className = 'ans-btn';
+            btn.innerText = ans;
+            btn.onclick = () => handleAnswer(btn, index === qData.correctIndex);
+            answersContainer.appendChild(btn);
+        });
+    }
+
+    function handleAnswer(btn, isCorrect) {
+        // Disable all buttons
+        document.querySelectorAll('.ans-btn').forEach(b => b.style.pointerEvents = 'none');
+        
+        if (isCorrect) {
+            btn.classList.add('correct');
+            createParticles(GAME_WIDTH/2, GAME_HEIGHT/2, '#4ECDC4', 20);
+            setTimeout(() => {
+                score++;
+                scoreHud.innerText = score;
+                quizModal.classList.remove('active');
+                setTimeout(() => {
+                    uiQuiz.classList.add('hidden');
+                    state = 'PLAY';
+                    bird.jump(); // Nhảy nhẹ khi tiếp tục
+                }, 300);
+            }, 800);
+        } else {
+            btn.classList.add('wrong');
+            setTimeout(() => {
+                quizModal.classList.remove('active');
+                setTimeout(() => {
+                    uiQuiz.classList.add('hidden');
+                    triggerGameOver("Trả lời sai!");
+                }, 300);
+            }, 800);
+        }
+    }
+
+    function triggerGameOver(reason) {
+        if(state === 'OVER') return;
+        state = 'OVER';
+        createParticles(bird.x, bird.y, '#E76F51', 30);
+        if (score > bestScore) {
+            bestScore = score;
+            localStorage.setItem('flappyEngBest', bestScore);
+        }
+        
+        scoreHud.classList.add('hidden');
+        finalScoreEl.innerText = score;
+        bestScoreEl.innerText = bestScore;
+        failReasonEl.innerText = reason;
+        
+        setTimeout(() => {
+            uiGameOver.classList.remove('hidden');
+            setTimeout(() => uiGameOver.querySelector('.modal').classList.add('active'), 10);
+        }, 500);
+    }
+
+    function resetGame() {
+        bird.reset();
+        pipes.reset();
+        particles = [];
+        score = 0;
+        frames = 0;
+        scoreHud.innerText = score;
+        scoreHud.classList.remove('hidden');
+        
+        uiGameOver.querySelector('.modal').classList.remove('active');
+        setTimeout(() => {
+            uiGameOver.classList.add('hidden');
+            uiStart.classList.remove('hidden');
+            setTimeout(() => uiStart.querySelector('.modal').classList.add('active'), 10);
+            state = 'START';
+        }, 300);
+    }
+
+    // Input
+    function handleInput(e) {
+        if (e.type === 'keydown' && e.code !== 'Space') return;
+        if (e.type === 'keydown') e.preventDefault();
+        
+        if (state === 'START' && e.target.id !== 'start-btn') {
+            uiStart.querySelector('.modal').classList.remove('active');
+            setTimeout(() => {
+                uiStart.classList.add('hidden');
+                state = 'PLAY';
+                bird.jump();
+            }, 200);
+        } else if (state === 'PLAY') {
+            bird.jump();
+        }
+    }
+
+    window.addEventListener('keydown', handleInput);
+    canvas.addEventListener('mousedown', handleInput);
+    canvas.addEventListener('touchstart', handleInput, {passive: false});
+
+    document.getElementById('start-btn').addEventListener('click', (e) => {
+        handleInput({type: 'click', target: canvas}); // Fake event
+    });
+    
+    document.getElementById('restart-btn').addEventListener('click', resetGame);
+
+    // Xử lý Resize
+    window.addEventListener('resize', () => {
+        GAME_WIDTH = canvas.offsetWidth;
+        GAME_HEIGHT = canvas.offsetHeight;
+        canvas.width = GAME_WIDTH;
+        canvas.height = GAME_HEIGHT;
+        bg.y = GAME_HEIGHT - bg.h;
+    });
+
+    // Loop
+    bg.init();
+    function loop() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        bg.draw(); bg.update();
+        pipes.draw(); pipes.update();
+        bird.draw(); bird.update();
+        updateParticles();
+        
+        if(state === 'PLAY' || state === 'START') frames++;
+        requestAnimationFrame(loop);
+    }
+    
+    // Đảm bảo font load xong rồi mới loop (tránh lệch chữ ban đầu)
+    document.fonts.ready.then(() => loop());
+
+</script>
+</body>
+</html>
