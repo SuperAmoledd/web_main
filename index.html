@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ngv | Portfolio</title>
-    
+
     <script>
         window.addEventListener('error', event => {
             if (event.message === 'ResizeObserver loop completed with undelivered notifications.') {
@@ -14,70 +15,110 @@
     </script>
 
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Space+Grotesk:wght@300;400;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Space+Grotesk:wght@300;400;600&display=swap"
+        rel="stylesheet">
 
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body class="antialiased" id="main-body">
 
-    <div id="preload-loader" class="fixed inset-0 z-[100] bg-[#050505] flex flex-col items-center justify-center overflow-hidden">
-        <button id="enter-btn" class="relative z-20 px-8 py-4 border border-[var(--color-2)] text-[var(--color-2)] font-bold tracking-widest hover:bg-[var(--color-2)] hover:text-black transition-all opacity-0">WELCOME!</button>
-        <div id="video-wrapper" class="absolute inset-0 w-full h-full opacity-0 pointer-events-none">
-            <video id="intro-video" src="/video/rickroll.mp4" playsinline class="w-full h-full object-cover"></video>
+    <div id="preload-loader"
+        class="fixed inset-0 z-[100] bg-[#050505] flex flex-col items-center justify-center overflow-hidden">
+        <div class="relative flex flex-col items-center justify-center">
+            <div
+                class="loader-circle w-32 h-32 border border-gray-800 rounded-full flex items-center justify-center relative">
+                <div
+                    class="absolute inset-0 rounded-full border-t border-t-[var(--color-2)] animate-[spin_1.5s_linear_infinite] opacity-80">
+                </div>
+                <div
+                    class="absolute inset-2 rounded-full border-b border-b-white animate-[spin_2s_linear_infinite_reverse] opacity-40">
+                </div>
+                <span id="loader-percentage"
+                    class="text-white font-mono text-xl tracking-[0.2em] z-10 font-light">0%</span>
+            </div>
+            <div class="mt-12 overflow-hidden h-6">
+                <span
+                    class="block text-gray-500 font-mono text-xs tracking-[0.4em] uppercase loader-text">Initializing...</span>
+            </div>
+            <div class="w-48 h-[1px] bg-gray-900 mt-6 relative overflow-hidden">
+                <div id="loader-progress-bar" class="absolute top-0 left-0 h-full bg-[var(--color-2)] w-0"></div>
+            </div>
         </div>
     </div>
 
-    <nav class="fixed top-0 left-0 w-full z-50 px-8 py-6 flex justify-between items-center mix-blend-difference text-white opacity-0">
-        <div class="text-2xl font-bold brand-font tracking-widest cursor-pointer hover:text-[var(--color-1)] transition-colors magnetic-target">Byngv.space</div>
+    <nav
+        class="fixed top-0 left-0 w-full z-50 px-8 py-6 flex justify-between items-center mix-blend-difference text-white opacity-0">
+        <div
+            class="text-2xl font-bold brand-font tracking-widest cursor-pointer hover:text-[var(--color-1)] transition-colors magnetic-target">
+            Byngv.space</div>
         <div class="hidden md:flex space-x-8 text-sm font-bold tracking-widest">
-            <button onclick="scrollToSection('#home')" class="nav-btn hover:text-[var(--color-2)] transition-colors uppercase magnetic-target">01. Intro</button>
-            <button onclick="scrollToSection('#works')" class="nav-btn hover:text-[var(--color-2)] transition-colors uppercase magnetic-target">02. Works</button>
-            <button onclick="scrollToSection('#contact')" class="nav-btn hover:text-[var(--color-2)] transition-colors uppercase magnetic-target">03. Connect</button>
+            <button onclick="scrollToSection('#home')"
+                class="nav-btn hover:text-[var(--color-2)] transition-colors uppercase magnetic-target">01.
+                Intro</button>
+            <button onclick="scrollToSection('#works')"
+                class="nav-btn hover:text-[var(--color-2)] transition-colors uppercase magnetic-target">02.
+                Works</button>
+            <button onclick="scrollToSection('#contact')"
+                class="nav-btn hover:text-[var(--color-2)] transition-colors uppercase magnetic-target">03.
+                Connect</button>
         </div>
-       <div id="mobile-menu-btn" onclick="toggleMobileMenu()" class="md:hidden text-2xl cursor-pointer z-50 select-none transition-transform active:scale-90">
+        <div id="mobile-menu-btn" onclick="toggleMobileMenu()"
+            class="md:hidden text-2xl cursor-pointer z-50 select-none transition-transform active:scale-90">
             ///
         </div>
     </nav>
 
-    <div id="mobile-menu-overlay" class="fixed inset-0 bg-[#050505] z-40 flex flex-col justify-center items-center opacity-0 pointer-events-none">
-    <button onclick="mobileNavClick('#home')" class="text-3xl font-bold mb-10 text-white hover:text-[var(--color-1)] brand-font">01. INTRO</button>
-    <button onclick="mobileNavClick('#works')" class="text-3xl font-bold mb-10 text-white hover:text-[var(--color-1)] brand-font">02. WORKS</button>
-    <button onclick="mobileNavClick('#contact')" class="text-3xl font-bold text-white hover:text-[var(--color-1)] brand-font">03. CONNECT</button>
-</div>
+    <div id="mobile-menu-overlay"
+        class="fixed inset-0 bg-[#050505] z-40 flex flex-col justify-center items-center opacity-0 pointer-events-none">
+        <button onclick="mobileNavClick('#home')"
+            class="text-3xl font-bold mb-10 text-white hover:text-[var(--color-1)] brand-font">01. INTRO</button>
+        <button onclick="mobileNavClick('#works')"
+            class="text-3xl font-bold mb-10 text-white hover:text-[var(--color-1)] brand-font">02. WORKS</button>
+        <button onclick="mobileNavClick('#contact')"
+            class="text-3xl font-bold text-white hover:text-[var(--color-1)] brand-font">03. CONNECT</button>
+    </div>
 
     <div id="main-wrapper" class="w-full overflow-x-hidden opacity-0">
-        
-        <section id="home" class="min-h-screen w-full flex items-center justify-center relative overflow-hidden border-b border-gray-900">
-            <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-[var(--color-1)] rounded-full blur-[150px] opacity-20 pointer-events-none animate-pulse" data-speed="0.5"></div>
-            <div class="absolute bottom-1/4 right-1/4 w-80 h-80 bg-[var(--color-2)] rounded-full blur-[150px] opacity-20 pointer-events-none" data-speed="0.8"></div>
+
+        <section id="home"
+            class="min-h-screen w-full flex items-center justify-center relative overflow-hidden border-b border-gray-900">
+            <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-[var(--color-1)] rounded-full blur-[150px] opacity-20 pointer-events-none animate-pulse"
+                data-speed="0.5"></div>
+            <div class="absolute bottom-1/4 right-1/4 w-80 h-80 bg-[var(--color-2)] rounded-full blur-[150px] opacity-20 pointer-events-none"
+                data-speed="0.8"></div>
 
             <div class="container mx-auto px-6 relative z-10 text-center">
                 <div class="overflow-hidden">
                     <p class="text-[var(--color-2)] tracking-[0.5em] text-sm mb-4 reveal-text font-bold">Welcome</p>
                 </div>
-                
+
                 <h1 class="text-6xl md:text-9xl font-bold leading-tight mb-6">
                     <div class="line-clamp"><span class="reveal-text block glitch-text" data-text="To">To</span></div>
-                    <div class="line-clamp"><span class="reveal-text block glitch-text" data-text="Byngv">Byngv</span></div>
+                    <div class="line-clamp"><span class="reveal-text block glitch-text" data-text="Byngv">Byngv</span>
+                    </div>
                 </h1>
 
                 <div class="max-w-xl mx-auto mt-8 overflow-hidden">
                     <p class="text-gray-400 text-lg md:text-xl reveal-text leading-relaxed">
-                        
+
                     </p>
                 </div>
 
                 <div class="mt-12 opacity-0 reveal-btn">
-                    <button onclick="scrollToSection('#works')" class="magnetic-target inline-block border border-[var(--color-2)] px-8 py-4 text-[var(--color-2)] hover:bg-[var(--color-2)] hover:text-black transition-all duration-300 tracking-widest text-sm font-bold">
+                    <button onclick="scrollToSection('#works')"
+                        class="magnetic-target inline-block border border-[var(--color-2)] px-8 py-4 text-[var(--color-2)] hover:bg-[var(--color-2)] hover:text-black transition-all duration-300 tracking-widest text-sm font-bold">
                         XEM DỰ ÁN
                     </button>
                 </div>
             </div>
 
-            <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex flex-col items-center opacity-50 animate-bounce">
+            <div
+                class="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex flex-col items-center opacity-50 animate-bounce">
                 <span class="text-xs tracking-widest mb-2">SCROLL</span>
                 <div class="w-[1px] h-12 bg-white"></div>
             </div>
@@ -96,27 +137,33 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24">
-                    <a href="/discord-bot/discord-bot_lenxuong/" class="project-item group cursor-pointer block">
+                    <a href="https://www.eximlog.vn" class="project-item group cursor-pointer block">
                         <div class="prism-card w-full h-[60vh] md:h-[70vh] relative mb-6">
-                            <img src="https://bs-uploads.toptal.io/blackfish-uploads/components/open_graph_image/8959325/og_image/optimized/how-to-make-a-discord-bot-7c0fe302b98b05b145682344b3a4ec59.png" alt="DISCORD BOT CHƠI" class="w-full h-full object-cover">
-                            <div class="absolute bottom-0 left-0 p-8 z-20 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
-                                <h3 class="text-4xl font-bold text-white mix-blend-difference">DISCORD BOT CHƠI</h3>
+                            <img src="https://www.eximlog.vn/img/img_logo/eximlog_logo.jpg" alt="EXIMLOG WEBSITE"
+                                class="w-full h-full object-cover">
+                            <div
+                                class="absolute bottom-0 left-0 p-8 z-20 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
+                                <h3 class="text-4xl font-bold text-white mix-blend-difference">EXIMLOG WEBSITE</h3>
                             </div>
                         </div>
-                        <div class="flex justify-between items-center text-gray-400 font-mono text-sm border-t border-gray-800 pt-4">
-                            <span>DISCORD BOT DEVELOPMENT / 2024</span>
+                        <div
+                            class="flex justify-between items-center text-gray-400 font-mono text-sm border-t border-gray-800 pt-4">
+                            <span>WEBSITE WAS CREATED BY NGỮ / 2026</span>
                             <span>01</span>
                         </div>
                     </a>
 
                     <a href="/discord-bot/discord-bot_admin/" class="project-item group cursor-pointer md:mt-32 block">
                         <div class="prism-card w-full h-[60vh] md:h-[70vh] relative mb-6">
-                            <img src="https://miro.medium.com/v2/0*l4yD_UyRZusqCXC1" alt="DISCORD BOT ADMIN" class="w-full h-full object-cover">
-                            <div class="absolute bottom-0 left-0 p-8 z-20 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
+                            <img src="https://miro.medium.com/v2/0*l4yD_UyRZusqCXC1" alt="DISCORD BOT ADMIN"
+                                class="w-full h-full object-cover">
+                            <div
+                                class="absolute bottom-0 left-0 p-8 z-20 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
                                 <h3 class="text-4xl font-bold text-white mix-blend-difference">DISCORD BOT ADMIN</h3>
                             </div>
                         </div>
-                        <div class="flex justify-between items-center text-gray-400 font-mono text-sm border-t border-gray-800 pt-4">
+                        <div
+                            class="flex justify-between items-center text-gray-400 font-mono text-sm border-t border-gray-800 pt-4">
                             <span>DISCORD BOT DEVELOPMENT / 2025</span>
                             <span>02</span>
                         </div>
@@ -124,12 +171,15 @@
 
                     <a href="/tro-choi/game-ban-ngoai-hanh-tinh/" class="project-item group cursor-pointer block">
                         <div class="prism-card w-full h-[50vh] relative mb-6">
-                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ1Yg-SnGW-MOmAcC-AcSPNjoUgNeTmckzl9w&s" alt="SPACE DEFENDER ELITE" class="w-full h-full object-cover">
-                            <div class="absolute bottom-0 left-0 p-8 z-20 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
+                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ1Yg-SnGW-MOmAcC-AcSPNjoUgNeTmckzl9w&s"
+                                alt="SPACE DEFENDER ELITE" class="w-full h-full object-cover">
+                            <div
+                                class="absolute bottom-0 left-0 p-8 z-20 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
                                 <h3 class="text-4xl font-bold text-white mix-blend-difference">SPACE DEFENDER ELITE</h3>
                             </div>
                         </div>
-                        <div class="flex justify-between items-center text-gray-400 font-mono text-sm border-t border-gray-800 pt-4">
+                        <div
+                            class="flex justify-between items-center text-gray-400 font-mono text-sm border-t border-gray-800 pt-4">
                             <span>GAME DEVELOPMENT / 2025</span>
                             <span>03</span>
                         </div>
@@ -137,12 +187,15 @@
 
                     <a href="/paint/" class="project-item group cursor-pointer md:mt-32 block">
                         <div class="prism-card w-full h-[50vh] relative mb-6">
-                            <img src="https://david.li/paint.png" alt="WEB PAINT APP" class="w-full h-full object-cover">
-                            <div class="absolute bottom-0 left-0 p-8 z-20 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
+                            <img src="https://david.li/paint.png" alt="WEB PAINT APP"
+                                class="w-full h-full object-cover">
+                            <div
+                                class="absolute bottom-0 left-0 p-8 z-20 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
                                 <h3 class="text-4xl font-bold text-white mix-blend-difference">WEB PAINT APP</h3>
                             </div>
                         </div>
-                        <div class="flex justify-between items-center text-gray-400 font-mono text-sm border-t border-gray-800 pt-4">
+                        <div
+                            class="flex justify-between items-center text-gray-400 font-mono text-sm border-t border-gray-800 pt-4">
                             <span>WEB DEVELOPMENT / 2025</span>
                             <span>04</span>
                         </div>
@@ -150,12 +203,15 @@
 
                     <a href="/tro-choi/game-con-ran/" class="project-item group cursor-pointer block">
                         <div class="prism-card w-full h-[50vh] relative mb-6">
-                            <img src="https://s3-hfx03.fptcloud.com/codelearnstorage/Upload/Blog/lam-game-ran-san-moi-bang-javavscript-63725373434.9996.png" alt="SPACE DEFENDER ELITE" class="w-full h-full object-cover">
-                            <div class="absolute bottom-0 left-0 p-8 z-20 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
+                            <img src="https://s3-hfx03.fptcloud.com/codelearnstorage/Upload/Blog/lam-game-ran-san-moi-bang-javavscript-63725373434.9996.png"
+                                alt="SPACE DEFENDER ELITE" class="w-full h-full object-cover">
+                            <div
+                                class="absolute bottom-0 left-0 p-8 z-20 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
                                 <h3 class="text-4xl font-bold text-white mix-blend-difference">SNAKE GAME</h3>
                             </div>
                         </div>
-                        <div class="flex justify-between items-center text-gray-400 font-mono text-sm border-t border-gray-800 pt-4">
+                        <div
+                            class="flex justify-between items-center text-gray-400 font-mono text-sm border-t border-gray-800 pt-4">
                             <span>GAME DEVELOPMENT / 2025</span>
                             <span>05</span>
                         </div>
@@ -163,12 +219,15 @@
 
                     <a href="/tro-choi/minecraft-clone/" class="project-item group cursor-pointer md:mt-32 block">
                         <div class="prism-card w-full h-[50vh] relative mb-6">
-                            <img src="https://www.minecraft.net/etc.clientlibs/minecraftnet/clientlibs/clientlib-site/resources/favicon.ico" alt="MINECRAFT CLONE" class="w-full h-full object-cover">
-                            <div class="absolute bottom-0 left-0 p-8 z-20 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
+                            <img src="https://www.minecraft.net/etc.clientlibs/minecraftnet/clientlibs/clientlib-site/resources/favicon.ico"
+                                alt="MINECRAFT CLONE" class="w-full h-full object-cover">
+                            <div
+                                class="absolute bottom-0 left-0 p-8 z-20 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
                                 <h3 class="text-4xl font-bold text-white mix-blend-difference">MINECRAFT CLONE</h3>
                             </div>
                         </div>
-                        <div class="flex justify-between items-center text-gray-400 font-mono text-sm border-t border-gray-800 pt-4">
+                        <div
+                            class="flex justify-between items-center text-gray-400 font-mono text-sm border-t border-gray-800 pt-4">
                             <span>WEB DEVELOPMENT / 2026</span>
                             <span>06</span>
                         </div>
@@ -176,12 +235,15 @@
 
                     <a href="/tro-choi/flappy-bird/" class="project-item group cursor-pointer block">
                         <div class="prism-card w-full h-[50vh] relative mb-6">
-                            <img src="https://img.poki-cdn.com/cdn-cgi/image/q=78,scq=50,width=1200,height=1200,fit=cover,f=png/5e0df231478aa0a331a4718d09dd91a2/flappy-bird.png" alt="FLAPPY BIRD" class="w-full h-full object-cover">
-                            <div class="absolute bottom-0 left-0 p-8 z-20 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
+                            <img src="https://img.poki-cdn.com/cdn-cgi/image/q=78,scq=50,width=1200,height=1200,fit=cover,f=png/5e0df231478aa0a331a4718d09dd91a2/flappy-bird.png"
+                                alt="FLAPPY BIRD" class="w-full h-full object-cover">
+                            <div
+                                class="absolute bottom-0 left-0 p-8 z-20 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
                                 <h3 class="text-4xl font-bold text-white mix-blend-difference">FLAPPY BIRD</h3>
                             </div>
                         </div>
-                        <div class="flex justify-between items-center text-gray-400 font-mono text-sm border-t border-gray-800 pt-4">
+                        <div
+                            class="flex justify-between items-center text-gray-400 font-mono text-sm border-t border-gray-800 pt-4">
                             <span>GAME DEVELOPMENT / 2026</span>
                             <span>07</span>
                         </div>
@@ -189,12 +251,15 @@
 
                     <a href="/tro-choi/ca-ro-with-ai/" class="project-item group cursor-pointer md:mt-32 block">
                         <div class="prism-card w-full h-[50vh] relative mb-6">
-                            <img src="https://st.gamevui.vn/images/image/2018/08/30/thi-dau-co-caro.jpg" alt="CARO WITH AI" class="w-full h-full object-cover">
-                            <div class="absolute bottom-0 left-0 p-8 z-20 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
+                            <img src="https://st.gamevui.vn/images/image/2018/08/30/thi-dau-co-caro.jpg"
+                                alt="CARO WITH AI" class="w-full h-full object-cover">
+                            <div
+                                class="absolute bottom-0 left-0 p-8 z-20 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
                                 <h3 class="text-4xl font-bold text-white mix-blend-difference">CARO WITH AI</h3>
                             </div>
                         </div>
-                        <div class="flex justify-between items-center text-gray-400 font-mono text-sm border-t border-gray-800 pt-4">
+                        <div
+                            class="flex justify-between items-center text-gray-400 font-mono text-sm border-t border-gray-800 pt-4">
                             <span>AI DEVELOPMENT / 2026</span>
                             <span>08</span>
                         </div>
@@ -202,12 +267,15 @@
 
                     <a href="/tro-choi/flappy-bird-english/" class="project-item group cursor-pointer block">
                         <div class="prism-card w-full h-[50vh] relative mb-6">
-                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTfY7Z6jK9wmYLcnAOdMm0hhLgUzgL4z1Fy3Q&s" alt="FLAPPY BIRD ENGLISH" class="w-full h-full object-cover">
-                            <div class="absolute bottom-0 left-0 p-8 z-20 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
+                            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTfY7Z6jK9wmYLcnAOdMm0hhLgUzgL4z1Fy3Q&s"
+                                alt="FLAPPY BIRD ENGLISH" class="w-full h-full object-cover">
+                            <div
+                                class="absolute bottom-0 left-0 p-8 z-20 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
                                 <h3 class="text-4xl font-bold text-white mix-blend-difference">FLAPPY BIRD ENGLISH</h3>
                             </div>
                         </div>
-                        <div class="flex justify-between items-center text-gray-400 font-mono text-sm border-t border-gray-800 pt-4">
+                        <div
+                            class="flex justify-between items-center text-gray-400 font-mono text-sm border-t border-gray-800 pt-4">
                             <span>GAME DEVELOPMENT / 2026</span>
                             <span>08</span>
                         </div>
@@ -217,18 +285,23 @@
             </div>
         </section>
 
-        <section id="contact" class="min-h-screen w-full flex flex-col justify-between pt-32 pb-10 px-6 relative overflow-hidden">
-                <div class="absolute inset-0 bg-gradient-to-b from-[#050505] to-[#0a0a0a] -z-10"></div>
-                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5"></div>
+        <section id="contact"
+            class="min-h-screen w-full flex flex-col justify-between pt-32 pb-10 px-6 relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-b from-[#050505] to-[#0a0a0a] -z-10"></div>
+            <div
+                class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5">
+            </div>
 
             <div class="container mx-auto h-full flex flex-col justify-center">
                 <span class="text-[var(--color-3)] font-mono text-sm mb-4 block">03 / START A PROJECT</span>
-                
+
                 <a href="mailto:vothanhngu00@gmail.com" class="magnetic-target group relative block w-fit">
-                    <h2 class="text-[12vw] leading-[0.8] font-bold text-white opacity-40 md:mix-blend-overlay md:opacity-50 group-hover:opacity-100 transition-opacity duration-500">
+                    <h2
+                        class="text-[12vw] leading-[0.8] font-bold text-white opacity-40 md:mix-blend-overlay md:opacity-50 group-hover:opacity-100 transition-opacity duration-500">
                         Ngữ<br>@ngv
                     </h2>
-                    <h2 class="text-[12vw] leading-[0.8] font-bold absolute top-0 left-0 text-[var(--color-3)] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pl-2 pointer-events-none mix-blend-difference" style="clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);">
+                    <h2 class="text-[12vw] leading-[0.8] font-bold absolute top-0 left-0 text-[var(--color-3)] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pl-2 pointer-events-none mix-blend-difference"
+                        style="clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);">
                         Ngữ<br>@ngv
                     </h2>
                 </a>
@@ -236,10 +309,22 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mt-24 border-t border-gray-800 pt-12">
                     <div>
                         <h4 class="text-xl font-bold mb-6">LIÊN HỆ</h4>
-                        <ul class="space-y-2 text-gray-400 font-mono">
+                        <ul class="space-y-2 text-gray-400 font-mono mb-10">
                             <li><span class="text-white">E:</span> vothanhngu00@gmail.com</li>
                             <li><span class="text-white">P:</span> (+84) 353 256 039</li>
                             <li><span class="text-white">A:</span> Tân An, Long An</li>
+                        </ul>
+
+                        <h4 class="text-xl font-bold mb-6">SOCIALS</h4>
+                        <ul class="flex flex-wrap gap-6">
+                            <li>
+                                <a href="https://www.facebook.com/v.ung.hnaht" target="_blank"
+                                    class="text-gray-400 hover:text-white transition-colors font-mono uppercase tracking-widest magnetic-target inline-block relative after:content-[''] after:absolute after:w-0 after:h-[1px] after:-bottom-1 after:left-0 after:bg-white hover:after:w-full after:transition-all after:duration-300">Facebook</a>
+                            </li>
+                            <li>
+                                <a href="https://www.instagram.com/v.ung_hnaht/" target="_blank"
+                                    class="text-gray-400 hover:text-white transition-colors font-mono uppercase tracking-widest magnetic-target inline-block relative after:content-[''] after:absolute after:w-0 after:h-[1px] after:-bottom-1 after:left-0 after:bg-white hover:after:w-full after:transition-all after:duration-300">Instagram</a>
+                            </li>
                         </ul>
                     </div>
                     <div class="flex flex-col justify-end">
@@ -250,51 +335,56 @@
                 </div>
             </div>
 
-            <footer class="mt-20 flex justify-between items-center text-xs text-gray-600 font-mono uppercase tracking-wider">
+            <footer
+                class="mt-20 flex justify-between items-center text-xs text-gray-600 font-mono uppercase tracking-wider">
                 <span>© 2021 Ngv.</span>
                 <span>All Rights Reserved.</span>
             </footer>
         </section>
-    
+
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script>
 
-        const enterBtn = document.getElementById('enter-btn');
         const preloadLoader = document.getElementById('preload-loader');
-        const introVideo = document.getElementById('intro-video');
-        const videoWrapper = document.getElementById('video-wrapper');
+        const loaderPercentage = document.getElementById('loader-percentage');
+        const loaderProgressBar = document.getElementById('loader-progress-bar');
 
         window.addEventListener("load", () => {
-            gsap.to(enterBtn, { opacity: 1, duration: 0.8, delay: 0.5 });
-        });
+            let progress = 0;
+            const duration = 2500;
+            const intervalTime = 20;
+            const step = (100 / (duration / intervalTime));
 
-        enterBtn.addEventListener("click", () => {
-            gsap.to(enterBtn, { opacity: 0, duration: 0.5, pointerEvents: "none" });
-            
-            gsap.to(videoWrapper, { 
-                opacity: 1, 
-                duration: 0.5, 
-                onComplete: () => {
-                    introVideo.volume = 1;
-                    introVideo.play();
-                    
+            const interval = setInterval(() => {
+                progress += step;
+                if (Math.random() > 0.8) progress += step * 1.5;
+
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+
+                    gsap.to(".loader-circle", { scale: 0.8, opacity: 0, duration: 0.6, ease: "power2.inOut" });
+                    gsap.to(".loader-text", { y: "100%", opacity: 0, duration: 0.4, ease: "power2.inOut" });
+                    gsap.to("#loader-progress-bar", { opacity: 0, duration: 0.4 });
+
                     setTimeout(() => {
                         gsap.to(preloadLoader, {
                             y: "-100%",
-                            duration: 1.5,
+                            duration: 1.2,
                             ease: "power4.inOut",
                             onComplete: () => {
-                                introVideo.pause();
-                                introVideo.currentTime = 0;
                                 preloadLoader.style.display = "none";
                                 initSite();
                             }
                         });
-                    }, 4000);
+                    }, 800);
                 }
-            });
+
+                if (loaderPercentage) loaderPercentage.textContent = Math.floor(progress) + '%';
+                if (loaderProgressBar) loaderProgressBar.style.width = progress + '%';
+            }, intervalTime);
         });
 
         function initSite() {
@@ -311,11 +401,11 @@
                 stagger: 0.2,
                 ease: "power4.out"
             })
-            .to(".reveal-btn", {
-                opacity: 1,
-                duration: 1,
-                ease: "power2.out"
-            }, "-=0.5");
+                .to(".reveal-btn", {
+                    opacity: 1,
+                    duration: 1,
+                    ease: "power2.out"
+                }, "-=0.5");
 
             const projects = document.querySelectorAll('.project-item');
             const observer = new IntersectionObserver((entries) => {
@@ -352,7 +442,7 @@
         function initMagneticButtons() {
             const magnets = document.querySelectorAll('.magnetic-target');
             // Chỉ chạy trên Desktop để tránh lỗi cảm ứng
-            if(window.innerWidth > 1024) {
+            if (window.innerWidth > 1024) {
                 magnets.forEach((magnet) => {
                     magnet.addEventListener('mousemove', (e) => {
                         const bounding = magnet.getBoundingClientRect();
@@ -383,9 +473,9 @@
                 gsap.to(menuOverlay, { opacity: 1, pointerEvents: "auto", duration: 0.5, ease: "power2.out" });
                 menuBtn.textContent = "✕"; // Đổi icon thành dấu X
                 menuBtn.style.color = "var(--color-1)"; // Đổi màu nút
-                
+
                 // Hiệu ứng xuất hiện các mục menu
-                gsap.fromTo("#mobile-menu-overlay button", 
+                gsap.fromTo("#mobile-menu-overlay button",
                     { y: 50, opacity: 0 },
                     { y: 0, opacity: 1, duration: 0.5, stagger: 0.1, delay: 0.2 }
                 );
@@ -405,6 +495,7 @@
         }
     </script>
 
-    
+
 </body>
+
 </html>
