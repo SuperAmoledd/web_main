@@ -19,7 +19,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Space+Grotesk:wght@300;400;600&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Syncopate:wght@400;700&family=Space+Grotesk:wght@300;400;600&display=swap"
         rel="stylesheet">
 
     <link rel="stylesheet" href="styles.css">
@@ -27,26 +27,33 @@
 
 <body class="antialiased" id="main-body">
 
-    <div id="preload-loader"
-        class="fixed inset-0 z-[100] bg-[#050505] flex flex-col items-center justify-center overflow-hidden">
-        <div class="relative flex flex-col items-center justify-center">
-            <div
-                class="loader-circle w-32 h-32 border border-gray-800 rounded-full flex items-center justify-center relative">
-                <div
-                    class="absolute inset-0 rounded-full border-t border-t-[var(--color-2)] animate-[spin_1.5s_linear_infinite] opacity-80">
-                </div>
-                <div
-                    class="absolute inset-2 rounded-full border-b border-b-white animate-[spin_2s_linear_infinite_reverse] opacity-40">
-                </div>
-                <span id="loader-percentage"
-                    class="text-white font-mono text-xl tracking-[0.2em] z-10 font-light">0%</span>
+    <div id="preload-loader" class="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden"
+        style="background-color: #a59a88; background-image: url('https://www.transparenttextures.com/patterns/crumpled-paper.png'); background-blend-mode: multiply;">
+
+        <div class="absolute inset-0 opacity-40"
+            style="background: radial-gradient(circle, transparent 20%, #7a6e5d 150%);"></div>
+
+        <div class="relative flex flex-col items-center justify-center w-full px-8 z-10">
+            <div class="overflow-hidden mb-12">
+                <h1 id="loader-brand"
+                    class="text-[#2c251e] text-3xl md:text-5xl font-semibold tracking-[0.2em] opacity-0"
+                    style="font-family: 'Cormorant Garamond', serif; text-transform: uppercase;">
+                    byNgv.space
+                </h1>
             </div>
-            <div class="mt-12 overflow-hidden h-6">
+
+
+
+            <div class="w-full max-w-xs h-[1px] bg-[#2c251e] bg-opacity-20 relative overflow-hidden mb-8">
+                <div id="loader-progress-bar" class="absolute top-0 left-0 h-full bg-[#2c251e] w-0"></div>
+            </div>
+
+            <div class="overflow-hidden">
                 <span
-                    class="block text-gray-500 font-mono text-xs tracking-[0.4em] uppercase loader-text">Initializing...</span>
-            </div>
-            <div class="w-48 h-[1px] bg-gray-900 mt-6 relative overflow-hidden">
-                <div id="loader-progress-bar" class="absolute top-0 left-0 h-full bg-[var(--color-2)] w-0"></div>
+                    class="block text-[#2c251e] tracking-[0.5em] text-[10px] md:text-xs uppercase loader-text opacity-70"
+                    style="font-family: 'Space Grotesk', sans-serif;">
+                    A Premium Experience
+                </span>
             </div>
         </div>
     </div>
@@ -352,37 +359,42 @@
         const loaderProgressBar = document.getElementById('loader-progress-bar');
 
         window.addEventListener("load", () => {
+            gsap.fromTo("#loader-brand",
+                { opacity: 0, y: 20 },
+                { opacity: 1, y: 0, duration: 1.5, ease: "power3.out" }
+            );
+
             let progress = 0;
-            const duration = 2500;
-            const intervalTime = 20;
+            const duration = 3000;
+            const intervalTime = 30;
             const step = (100 / (duration / intervalTime));
 
             const interval = setInterval(() => {
                 progress += step;
-                if (Math.random() > 0.8) progress += step * 1.5;
+                if (Math.random() > 0.85) progress += step * 0.8;
 
                 if (progress >= 100) {
                     progress = 100;
                     clearInterval(interval);
 
-                    gsap.to(".loader-circle", { scale: 0.8, opacity: 0, duration: 0.6, ease: "power2.inOut" });
-                    gsap.to(".loader-text", { y: "100%", opacity: 0, duration: 0.4, ease: "power2.inOut" });
-                    gsap.to("#loader-progress-bar", { opacity: 0, duration: 0.4 });
+                    const tl = gsap.timeline();
 
-                    setTimeout(() => {
-                        gsap.to(preloadLoader, {
+                    tl.to("#loader-percentage", { y: -30, opacity: 0, duration: 0.8, ease: "power3.inOut" })
+                        .to("#loader-brand", { y: -20, opacity: 0, duration: 0.8, ease: "power3.inOut" }, "-=0.6")
+                        .to(".loader-text", { y: 20, opacity: 0, duration: 0.6, ease: "power2.inOut" }, "-=0.8")
+                        .to("#loader-progress-bar", { scaleX: 0, opacity: 0, duration: 0.6, transformOrigin: "right" }, "-=0.8")
+                        .to(preloadLoader, {
                             y: "-100%",
-                            duration: 1.2,
-                            ease: "power4.inOut",
+                            duration: 1.4,
+                            ease: "expo.inOut",
                             onComplete: () => {
                                 preloadLoader.style.display = "none";
                                 initSite();
                             }
-                        });
-                    }, 800);
+                        }, "+=0.2");
                 }
 
-                if (loaderPercentage) loaderPercentage.textContent = Math.floor(progress) + '%';
+                if (loaderPercentage) loaderPercentage.textContent = Math.floor(progress);
                 if (loaderProgressBar) loaderProgressBar.style.width = progress + '%';
             }, intervalTime);
         });

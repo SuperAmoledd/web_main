@@ -24,12 +24,16 @@ body {
     padding: 0;
 }
 
-h1, h2, h3, .brand-font {
+h1,
+h2,
+h3,
+.brand-font {
     font-family: 'Syncopate', sans-serif;
     text-transform: uppercase;
 }
 
-#main-wrapper, nav {
+#main-wrapper,
+nav {
     opacity: 0;
     transition: opacity 1s ease;
 }
@@ -73,7 +77,7 @@ h1, h2, h3, .brand-font {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(45deg, rgba(255,0,60,0.2), rgba(0,240,255,0.2));
+    background: linear-gradient(45deg, rgba(255, 0, 60, 0.2), rgba(0, 240, 255, 0.2));
     opacity: 0;
     transition: opacity 0.3s ease;
     z-index: 10;
@@ -109,4 +113,7 @@ h1, h2, h3, .brand-font {
     width: 100%;
 }
 
-.line-clamp { overflow: hidden; display: block; }
+.line-clamp {
+    overflow: hidden;
+    display: block;
+}
